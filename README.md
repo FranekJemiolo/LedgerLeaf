@@ -1,12 +1,12 @@
 # LedgerLeaf
 
-A fully local-first recurring expenses and obligations management application built with Tauri, React, and TypeScript.
+A fully local-first recurring expenses and obligations management application built as a Progressive Web App with React and TypeScript.
 
 ## Features
 
 - **Local-First**: All data stored locally in human-readable YAML files
 - **Offline-First**: Works entirely offline without any backend dependencies
-- **Desktop App**: Native desktop application using Tauri
+- **Desktop App**: Installable Progressive Web App with native filesystem access
 - **Expense Tracking**: Track recurring subscriptions, services, and obligations
 - **Smart Reminders**: Local notifications for upcoming payments and unused services
 - **Dashboard**: Overview of monthly recurring costs, upcoming payments, and category breakdowns
@@ -19,10 +19,10 @@ A fully local-first recurring expenses and obligations management application bu
 - **Frontend**: React with TypeScript
 - **Build Tool**: Vite
 - **Styling**: TailwindCSS
-- **Desktop Runtime**: Tauri
+- **Runtime**: Progressive Web App (PWA)
 - **State Management**: Zustand
 - **Validation**: Zod schemas
-- **Storage**: YAML files on local filesystem
+- **Storage**: YAML files via File System Access API
 - **Date Handling**: date-fns
 - **Spreadsheet Support**: SheetJS
 
@@ -36,8 +36,6 @@ A fully local-first recurring expenses and obligations management application bu
 
 ### Prerequisites
 - Node.js (v18 or higher)
-- Rust and Cargo
-- Tauri CLI
 
 ### Getting Started
 
@@ -54,7 +52,7 @@ npm install
 
 3. Run the development server:
 ```bash
-npm run tauri dev
+npm run dev
 ```
 
 ### Building
@@ -62,8 +60,16 @@ npm run tauri dev
 To build the application for production:
 
 ```bash
-npm run tauri build
+npm run build
 ```
+
+### Implementation Status
+
+📋 **Implementation Plan**: See [docs/IMPLEMENTATION_PLAN.md](./docs/IMPLEMENTATION_PLAN.md) for detailed implementation status and roadmap.
+
+✅ **Completed**: Core expense management, dashboard, calendar, basic notifications
+🚧 **In Progress**: PWA implementation, filesystem storage, import/export completion
+📅 **Planned**: Settings panel, advanced filtering, enhanced features
 
 ## Project Structure
 
@@ -134,4 +140,4 @@ This project is open source and available under the MIT License.
 
 ## Recommended IDE Setup
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- [VS Code](https://code.visualstudio.com/) with ES7+ React/Redux/React-Native snippets and PWA tools
