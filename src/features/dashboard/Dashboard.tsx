@@ -1,14 +1,5 @@
 import React, { useEffect } from 'react';
 import { differenceInDays } from 'date-fns';
-import {
-  Calendar,
-  AlertTriangle,
-  TrendingUp,
-  CreditCard,
-  Bell,
-  CheckCircle,
-  Plus,
-} from 'lucide-react';
 import { Expense } from '../../types';
 import { useAppStore } from '../../lib/store';
 
@@ -93,275 +84,147 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">Overview of your recurring expenses and obligations</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          <Plus className="h-4 w-4" />
-          Add Expense
-        </button>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Monthly Recurring */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Monthly Recurring</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(dashboardStats.totalMonthlyRecurring)}
-              </p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-blue-600" />
+      {/* Overdue Warning */}
+      {dashboardStats.overdueItems.length > 0 && (
+        <div className="bg-error-container text-on-error-container border border-error/20 p-4 rounded-lg flex items-start gap-4 shadow-sm">
+          <span className="material-symbols-outlined text-error" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+          <div className="flex-1">
+            <h2 className="font-headline-md text-headline-md leading-tight">Overdue Items</h2>
+            <p className="font-body-sm text-body-sm mt-1">
+              {dashboardStats.overdueItems[0]?.name} was due 2 days ago. Pay now to avoid service interruption.
+            </p>
+            <div className="mt-3 flex justify-between items-center border-t border-error/10 pt-3">
+              <span className="font-data-tabular text-data-tabular font-bold">
+                {formatCurrency(dashboardStats.overdueItems[0]?.cost.amount || 0)}
+              </span>
+              <button className="bg-primary text-on-primary px-4 py-1 rounded font-label-caps text-label-caps uppercase tracking-wider">
+                Resolve
+              </button>
             </div>
           </div>
-        </div>
-
-        {/* Upcoming Payments */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Upcoming (30 days)</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {dashboardStats.upcomingPayments.length}
-              </p>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <Calendar className="h-6 w-6 text-orange-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Overdue Items */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Overdue</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {dashboardStats.overdueItems.length}
-              </p>
-            </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Unused Services */}
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Potentially Unused</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {dashboardStats.potentiallyUnusedServices.length}
-              </p>
-            </div>
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <Bell className="h-6 w-6 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Upcoming Payments */}
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Upcoming Payments</h2>
-            <p className="text-sm text-gray-600">Next 30 days</p>
-          </div>
-          <div className="p-6">
-            {upcomingPaymentsWithDays.length > 0 ? (
-              <div className="space-y-4">
-                {upcomingPaymentsWithDays.slice(0, 5).map(({ expense, daysUntil }) => (
-                  <div
-                    key={expense.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer"
-                    onClick={() => setSelectedExpense(expense.id)}
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{expense.name}</div>
-                      <div className="text-sm text-gray-600">
-                        {expense.category.join(', ')}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium text-gray-900">
-                        {formatCurrency(expense.cost.amount, expense.cost.currency)}
-                      </div>
-                      <div className={`text-sm px-2 py-1 rounded-full inline-block ${getUrgencyColor(daysUntil)}`}>
-                        {getUrgencyText(daysUntil)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {upcomingPaymentsWithDays.length > 5 && (
-                  <div className="text-center pt-4">
-                    <button className="text-blue-600 hover:text-blue-700 font-medium">
-                      View all upcoming payments
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>No upcoming payments in the next 30 days</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Category Breakdown */}
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Category Breakdown</h2>
-            <p className="text-sm text-gray-600">Monthly spending by category</p>
-          </div>
-          <div className="p-6">
-            {Object.keys(dashboardStats.categoryBreakdown).length > 0 ? (
-              <div className="space-y-4">
-                {Object.entries(dashboardStats.categoryBreakdown)
-                  .sort(([, a], [, b]) => b - a)
-                  .slice(0, 6)
-                  .map(([category, amount]) => {
-                    const percentage = (amount / dashboardStats.totalMonthlyRecurring) * 100;
-                    return (
-                      <div key={category} className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-gray-900">{category}</span>
-                          <span className="text-sm text-gray-600">
-                            {formatCurrency(amount)} ({percentage.toFixed(1)}%)
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <CreditCard className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>No categories to display</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Alert Sections */}
-      {(dashboardStats.overdueItems.length > 0 || dashboardStats.potentiallyUnusedServices.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Overdue Items */}
-          {dashboardStats.overdueItems.length > 0 && (
-            <div className="bg-white rounded-lg border border-red-200">
-              <div className="p-6 border-b border-red-200 bg-red-50">
-                <h2 className="text-lg font-semibold text-red-900">Overdue Items</h2>
-                <p className="text-sm text-red-700">Immediate attention required</p>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {dashboardStats.overdueItems.slice(0, 3).map((expense) => (
-                    <div
-                      key={expense.id}
-                      className="flex items-center justify-between p-4 bg-red-50 rounded-lg cursor-pointer hover:bg-red-100"
-                      onClick={() => setSelectedExpense(expense.id)}
-                    >
-                      <div className="flex-1">
-                        <div className="font-medium text-red-900">{expense.name}</div>
-                        <div className="text-sm text-red-700">
-                          {expense.category.join(', ')}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium text-red-900">
-                          {formatCurrency(expense.cost.amount, expense.cost.currency)}
-                        </div>
-                        <div className="text-sm text-red-700">Overdue</div>
-                      </div>
-                    </div>
-                  ))}
-                  {dashboardStats.overdueItems.length > 3 && (
-                    <div className="text-center pt-4">
-                      <button className="text-red-600 hover:text-red-700 font-medium">
-                        View all overdue items
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Potentially Unused Services */}
-          {dashboardStats.potentiallyUnusedServices.length > 0 && (
-            <div className="bg-white rounded-lg border border-yellow-200">
-              <div className="p-6 border-b border-yellow-200 bg-yellow-50">
-                <h2 className="text-lg font-semibold text-yellow-900">Potentially Unused Services</h2>
-                <p className="text-sm text-yellow-700">Review these subscriptions</p>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {dashboardStats.potentiallyUnusedServices.slice(0, 3).map((expense) => {
-                    const daysSinceConfirmation = expense.usage_tracking.last_confirmed_use
-                      ? differenceInDays(new Date(), new Date(expense.usage_tracking.last_confirmed_use))
-                      : null;
-                    
-                    return (
-                      <div
-                        key={expense.id}
-                        className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg cursor-pointer hover:bg-yellow-100"
-                        onClick={() => setSelectedExpense(expense.id)}
-                      >
-                        <div className="flex-1">
-                          <div className="font-medium text-yellow-900">{expense.name}</div>
-                          <div className="text-sm text-yellow-700">
-                            {daysSinceConfirmation
-                              ? `Last used ${daysSinceConfirmation} days ago`
-                              : 'Never confirmed usage'}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium text-yellow-900">
-                            {formatCurrency(expense.cost.amount, expense.cost.currency)}
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Handle usage confirmation
-                            }}
-                            className="text-sm text-yellow-700 hover:text-yellow-800 flex items-center gap-1"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                            Confirm usage
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {dashboardStats.potentiallyUnusedServices.length > 3 && (
-                    <div className="text-center pt-4">
-                      <button className="text-yellow-600 hover:text-yellow-700 font-medium">
-                        View all potentially unused services
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
+
+      {/* Monthly Summary Card */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-2 bg-surface-container-lowest border border-outline-variant p-5 flex flex-col justify-between h-full">
+          <div>
+            <h3 className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Monthly Estimated Recurring</h3>
+            <div className="flex items-baseline gap-2">
+              <span className="font-display-sm text-display-sm text-primary">
+                {formatCurrency(dashboardStats.totalMonthlyRecurring)}
+              </span>
+              <span className="text-on-surface-variant font-body-sm text-body-sm">+4% vs last month</span>
+            </div>
+          </div>
+          <div className="mt-6 space-y-3">
+            <div className="flex items-center justify-between text-body-sm font-body-sm">
+              <span>Utilities</span>
+              <span className="font-data-tabular text-data-tabular">
+                {formatCurrency(dashboardStats.categoryBreakdown['Utilities'] || 0)}
+              </span>
+            </div>
+            <div className="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+              <div className="bg-primary h-full w-[34%]"></div>
+            </div>
+            <div className="flex items-center justify-between text-body-sm font-body-sm">
+              <span>Subscriptions</span>
+              <span className="font-data-tabular text-data-tabular">
+                {formatCurrency(dashboardStats.categoryBreakdown['Subscriptions'] || 0)}
+              </span>
+            </div>
+            <div className="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+              <div className="bg-secondary h-full w-[15%]"></div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-primary-container text-on-primary-container p-5 flex flex-col justify-between">
+          <h3 className="font-label-caps text-label-caps opacity-80 uppercase">Optimization Score</h3>
+          <div className="flex items-center justify-center py-4">
+            <div className="relative w-24 h-24 flex items-center justify-center border-4 border-on-primary-container/20 rounded-full">
+              <span className="font-display-sm text-display-sm text-on-primary">82</span>
+              <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
+                <circle className="text-on-primary-container" cx="50" cy="50" fill="none" r="48" stroke="currentColor" strokeDasharray="250 300" strokeWidth="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <p className="text-body-sm font-body-sm opacity-90 text-center">Saving $12/mo could improve your score.</p>
+        </div>
+      </section>
+
+      {/* Upcoming Payments Table */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-headline-md text-headline-md text-primary">Upcoming Payments</h3>
+          <span className="font-label-caps text-label-caps text-on-surface-variant">Next 7 Days</span>
+        </div>
+        <div className="border border-outline-variant bg-surface-container-lowest divide-y divide-outline-variant">
+          {upcomingPaymentsWithDays.slice(0, 3).map(({ expense, daysUntil }) => (
+            <div key={expense.id} className="flex items-center px-4 h-table-row-height hover:bg-surface-container-low transition-colors group">
+              <div className="flex-1">
+                <div className="font-body-base text-body-base text-on-surface">{expense.name}</div>
+                <div className="font-body-sm text-body-sm text-on-surface-variant">
+                  {calculateNextDue(expense).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className={`px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed font-label-caps text-label-caps rounded`}>
+                  {daysUntil <= 3 ? 'Low' : daysUntil <= 7 ? 'Medium' : 'Urgent'}
+                </span>
+                <div className="font-data-tabular text-data-tabular text-on-surface text-right min-w-[60px]">
+                  {formatCurrency(expense.cost.amount)}
+                </div>
+                <span className="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">
+                  chevron_right
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Potentially Unused */}
+      <section className="space-y-4">
+        <h3 className="font-headline-md text-headline-md text-primary">Potentially Unused</h3>
+        <div className="flex overflow-x-auto gap-4 no-scrollbar -mx-container-padding px-container-padding pb-2">
+          {dashboardStats.potentiallyUnusedServices.slice(0, 2).map((expense) => (
+            <div key={expense.id} className="min-w-[240px] bg-white border border-outline-variant p-4 flex flex-col gap-3">
+              <div className="flex justify-between items-start">
+                <div className="w-10 h-10 bg-surface-container flex items-center justify-center rounded">
+                  <span className="material-symbols-outlined text-primary">movie</span>
+                </div>
+                <span className="bg-surface-container-high text-on-surface-variant px-2 py-0.5 text-xs font-semibold rounded">
+                  30d Idle
+                </span>
+              </div>
+              <div>
+                <div className="font-body-base text-body-base">{expense.name}</div>
+                <p className="text-body-sm text-body-sm text-on-surface-variant">No activity since July 12th.</p>
+              </div>
+              <div className="mt-auto pt-2 flex items-center justify-between border-t border-outline-variant/30">
+                <span className="font-data-tabular text-data-tabular">
+                  {formatCurrency(expense.cost.amount)}/mo
+                </span>
+                <button className="text-primary font-label-caps text-label-caps hover:underline">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Decorative Aesthetic Image */}
+      <div className="rounded-xl overflow-hidden h-40 w-full relative group">
+        <img 
+          alt="Financial overview" 
+          className="w-full h-full object-cover grayscale opacity-80" 
+          src="https://via.placeholder.com/400x200/f7f9fb/1d2b3e?text=Financial+Overview"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent flex items-end p-4">
+          <p className="text-white font-label-caps text-label-caps">Financial Clarity Achieved.</p>
+        </div>
+      </div>
     </div>
   );
 };

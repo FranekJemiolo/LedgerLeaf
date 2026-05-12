@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, AlertCircle, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useAppStore } from '../../lib/store';
 import * as XLSX from 'xlsx';
 
@@ -290,10 +289,10 @@ export const ImportWizard: React.FC = () => {
       case 0:
         return (
           <div className="space-y-6">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Upload your expense file</h3>
-              <p className="text-gray-600 mb-4">
+            <div className="border-2 border-dashed border-outline-variant rounded-lg p-8 text-center">
+              <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">upload_file</span>
+              <h3 className="font-headline-md text-headline-md text-primary mb-2">Upload your expense file</h3>
+              <p className="font-body-sm text-body-sm text-on-surface-variant mb-4">
                 Supports CSV, Excel (.xlsx, .xls) files
               </p>
               <input
@@ -306,7 +305,7 @@ export const ImportWizard: React.FC = () => {
               />
               <label
                 htmlFor="file-upload"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                className="inline-flex items-center px-4 py-2 border border-transparent font-body-sm text-body-sm rounded-lg text-on-primary bg-primary hover:opacity-90 cursor-pointer"
               >
                 Choose File
               </label>
@@ -314,16 +313,16 @@ export const ImportWizard: React.FC = () => {
             
             {isProcessing && (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Processing file...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">Processing file...</p>
               </div>
             )}
             
             {file && !isProcessing && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary rounded-lg p-4">
                 <div className="flex items-center">
-                  <FileText className="h-5 w-5 text-green-600 mr-2" />
-                  <span className="text-green-800 font-medium">{file.name}</span>
+                  <span className="material-symbols-outlined text-tertiary mr-2">description</span>
+                  <span className="font-body-base text-body-base text-on-tertiary-fixed">{file.name}</span>
                 </div>
               </div>
             )}
@@ -334,17 +333,17 @@ export const ImportWizard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Detected Expenses</h3>
+              <h3 className="font-headline-md text-headline-md text-primary">Detected Expenses</h3>
               <div className="flex gap-2">
                 <button
                   onClick={selectAllExpenses}
-                  className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                  className="px-3 py-1 font-body-sm text-body-sm border border-outline-variant rounded hover:bg-surface-container-low"
                 >
                   Select All
                 </button>
                 <button
                   onClick={deselectAllExpenses}
-                  className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                  className="px-3 py-1 font-body-sm text-body-sm border border-outline-variant rounded hover:bg-surface-container-low"
                 >
                   Deselect All
                 </button>
@@ -357,8 +356,8 @@ export const ImportWizard: React.FC = () => {
                   key={index}
                   className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                     selectedExpenses.has(index)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-primary bg-primary-container'
+                      : 'border-outline-variant hover:border-outline'
                   }`}
                   onClick={() => toggleExpenseSelection(index)}
                 >
@@ -369,26 +368,26 @@ export const ImportWizard: React.FC = () => {
                           type="checkbox"
                           checked={selectedExpenses.has(index)}
                           onChange={() => toggleExpenseSelection(index)}
-                          className="h-4 w-4 text-blue-600"
+                          className="h-4 w-4 text-primary"
                         />
-                        <span className="font-medium text-gray-900">{expense.name}</span>
+                        <span className="font-body-base text-body-base text-on-surface">{expense.name}</span>
                         {expense.detectedRecurring && (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
+                          <span className="px-2 py-1 bg-tertiary-fixed text-on-tertiary-fixed font-body-sm text-body-sm rounded">
                             Recurring
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="font-body-sm text-body-sm text-on-surface-variant">
                         {formatCurrency(expense.amount, expense.currency)} • {expense.frequency}
                       </div>
                       {expense.category && expense.category.length > 0 && (
-                        <div className="text-sm text-gray-500 mt-1">
+                        <div className="font-body-sm text-body-sm text-on-surface-variant mt-1">
                           Category: {expense.category.join(', ')}
                         </div>
                       )}
                     </div>
                     <div className="ml-4">
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${getConfidenceColor(expense.confidence)}`}>
+                      <div className={`px-2 py-1 rounded-full font-body-sm text-body-sm ${getConfidenceColor(expense.confidence)}`}>
                         {(expense.confidence * 100).toFixed(0)}% confidence
                       </div>
                     </div>
@@ -397,11 +396,11 @@ export const ImportWizard: React.FC = () => {
               ))}
             </div>
             
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-primary-container text-on-primary-container border border-primary rounded-lg p-4">
               <div className="flex items-start">
-                <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-2" />
-                <div className="text-sm text-blue-800">
-                  <p className="font-medium mb-1">Import Summary</p>
+                <span className="material-symbols-outlined text-primary mt-0.5 mr-2">info</span>
+                <div className="font-body-sm text-body-sm text-on-primary-container">
+                  <p className="font-body-base text-body-base mb-1">Import Summary</p>
                   <p>Selected {selectedExpenses.size} of {importedData.length} detected expenses</p>
                   <p>Total: {formatCurrency(
                     Array.from(selectedExpenses).reduce((sum, index) => sum + importedData[index].amount, 0)
@@ -410,96 +409,105 @@ export const ImportWizard: React.FC = () => {
               </div>
             </div>
           </div>
-        );
+        )}
         
-      case 2:
-        return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-medium">Field Mapping</h3>
-            <p className="text-gray-600">
-              Review how your data will be mapped to LedgerLeaf fields
-            </p>
-            
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium mb-3">Detected Mappings:</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Name:</span>
-                  <span className="font-medium">Auto-detected</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Amount:</span>
-                  <span className="font-medium">Auto-detected</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Frequency:</span>
-                  <span className="font-medium">Pattern-based detection</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Currency:</span>
-                  <span className="font-medium">USD (default)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Type:</span>
-                  <span className="font-medium">Subscription (if recurring detected)</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start">
-                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 mr-2" />
-                <div className="text-sm text-yellow-800">
-                  <p className="font-medium mb-1">Note</p>
-                  <p>You can edit the imported expenses after import to adjust any fields or add additional information.</p>
-                </div>
-              </div>
-            </div>
+        <div className="flex justify-center">
+          <button
+            onClick={resetWizard}
+            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-caps text-label-caps hover:opacity-90"
+          >
+            Import Another File
+          </button>
+        </div>
+      </div>
+    );
+    
+  default:
+    return null;
+}
+};
+
+const canGoNext = () => {
+switch (currentStep) {
+  case 0:
+    return file !== null && importedData.length > 0;
+  case 1:
+    return selectedExpenses.size > 0;
+  case 2:
+    return true;
+  default:
+    return false;
+}
+};
+
+return (
+  <div className="max-w-4xl mx-auto space-y-6">
+    {/* Header */}
+    <div className="text-center space-y-2">
+      <h2 className="font-headline-md text-headline-md text-primary">Wizard</h2>
+      <p className="font-body-sm text-body-sm text-on-surface-variant">Import your expense data from CSV or Excel files</p>
+    </div>
+    
+    {/* Stepper */}
+    <div className="flex items-center justify-center space-x-4 mb-8">
+      {steps.map((step, index) => (
+        <div key={step.id} className="flex items-center space-x-2">
+          <div className={`flex items-center justify-center w-8 h-8 rounded-full font-label-caps text-label-caps ${
+            index <= currentStep
+              ? 'bg-primary text-on-primary'
+              : 'bg-surface-container text-on-surface-variant'
+          }`}>
+            {index + 1}
           </div>
-        );
+          <div className={`h-0.5 w-16 ${
+            index < currentStep ? 'bg-primary' : 'bg-surface-container'
+          }`} />
+        </div>
+      ))}
+    </div>
+    
+    {/* Step Content */}
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
+      {renderStep()}
+    </div>
+    
+    {/* Navigation */}
+    {currentStep < 3 && (
+      <div className="flex justify-between mt-6">
+        <button
+          onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+          disabled={currentStep === 0}
+          className={`flex items-center px-4 py-2 rounded-lg font-label-caps text-label-caps ${
+            currentStep === 0
+              ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
+              : 'bg-primary text-on-primary hover:opacity-90'
+          }`}
+        >
+          <span className="material-symbols-outlined">chevron_left</span>
+          Previous
+        </button>
         
-      case 3:
-        return (
-          <div className="space-y-6">
-            {importResults.success > 0 ? (
-              <div className="text-center">
-                <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Import Successful!</h3>
-                <p className="text-gray-600 mb-4">
-                  {importResults.success} expenses have been imported successfully
-                </p>
-              </div>
+        {currentStep === 2 ? (
+          <button
+            onClick={handleImport}
+            disabled={!canGoNext() || isProcessing}
+            className={`flex items-center px-4 py-2 rounded-lg font-label-caps text-label-caps ${
+              !canGoNext() || isProcessing
+                ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
+                : 'bg-primary text-on-primary hover:opacity-90'
+            }`}
+          >
+            {isProcessing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-on-primary mr-2"></div>
+                Importing...
+              </>
             ) : (
-              <div className="text-center">
-                <AlertCircle className="h-16 w-16 text-red-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Import Failed</h3>
-                <p className="text-gray-600 mb-4">
-                  No expenses could be imported
-                </p>
-              </div>
+              <>
+                Import Expenses
+                <span className="material-symbols-outlined">chevron_right</span>
+              </>
             )}
-            
-            {importResults.errors.length > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <h4 className="font-medium text-red-800 mb-2">Errors:</h4>
-                <ul className="text-sm text-red-700 space-y-1">
-                  {importResults.errors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            <div className="flex justify-center">
-              <button
-                onClick={resetWizard}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Import Another File
-              </button>
-            </div>
-          </div>
-        );
         
       default:
         return null;
@@ -520,44 +528,33 @@ export const ImportWizard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Import Expenses</h1>
-        <p className="text-gray-600">Import your expense data from CSV or Excel files</p>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h2 className="font-headline-md text-headline-md text-primary">Wizard</h2>
+        <p className="font-body-sm text-body-sm text-on-surface-variant">Import your expense data from CSV or Excel files</p>
       </div>
       
-      {/* Progress Steps */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center flex-1">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                index <= currentStep
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-600'
-              }`}>
-                {index + 1}
-              </div>
-              <div className="ml-3 flex-1">
-                <p className={`text-sm font-medium ${
-                  index <= currentStep ? 'text-blue-600' : 'text-gray-600'
-                }`}>
-                  {step.title}
-                </p>
-                <p className="text-xs text-gray-500">{step.description}</p>
-              </div>
-              {index < steps.length - 1 && (
-                <div className={`flex-1 h-px mx-4 ${
-                  index < currentStep ? 'bg-blue-600' : 'bg-gray-200'
-                }`} />
-              )}
+      {/* Stepper */}
+      <div className="flex items-center justify-center space-x-4 mb-8">
+        {steps.map((step, index) => (
+          <div key={step.id} className="flex items-center space-x-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full font-label-caps text-label-caps ${
+              index <= currentStep
+                ? 'bg-primary text-on-primary'
+                : 'bg-surface-container text-on-surface-variant'
+            }`}>
+              {index + 1}
             </div>
-          ))}
-        </div>
+            <div className={`h-0.5 w-16 ${
+              index < currentStep ? 'bg-primary' : 'bg-surface-container'
+            }`} />
+          </div>
+        ))}
       </div>
       
       {/* Step Content */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
         {renderStep()}
       </div>
       
@@ -567,13 +564,13 @@ export const ImportWizard: React.FC = () => {
           <button
             onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
             disabled={currentStep === 0}
-            className={`flex items-center px-4 py-2 border rounded-lg ${
+            className={`flex items-center px-4 py-2 rounded-lg font-label-caps text-label-caps ${
               currentStep === 0
-                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
+                : 'bg-primary text-on-primary hover:opacity-90'
             }`}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <span className="material-symbols-outlined">chevron_left</span>
             Previous
           </button>
           
@@ -581,21 +578,21 @@ export const ImportWizard: React.FC = () => {
             <button
               onClick={handleImport}
               disabled={!canGoNext() || isProcessing}
-              className={`flex items-center px-4 py-2 rounded-lg ${
+              className={`flex items-center px-4 py-2 rounded-lg font-label-caps text-label-caps ${
                 !canGoNext() || isProcessing
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
+                  : 'bg-primary text-on-primary hover:opacity-90'
               }`}
             >
               {isProcessing ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-on-primary mr-2"></div>
                   Importing...
                 </>
               ) : (
                 <>
                   Import Expenses
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                  <span className="material-symbols-outlined">chevron_right</span>
                 </>
               )}
             </button>
@@ -603,14 +600,14 @@ export const ImportWizard: React.FC = () => {
             <button
               onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
               disabled={!canGoNext()}
-              className={`flex items-center px-4 py-2 rounded-lg ${
+              className={`flex items-center px-4 py-2 rounded-lg font-label-caps text-label-caps ${
                 !canGoNext()
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
+                  : 'bg-primary text-on-primary hover:opacity-90'
               }`}
             >
               Next
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <span className="material-symbols-outlined">chevron_right</span>
             </button>
           )}
         </div>
