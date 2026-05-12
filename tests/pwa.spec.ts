@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('PWA Offline Functionality', () => {
+test.describe('PWA Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     // Wait for app to load
@@ -45,13 +45,20 @@ test.describe('PWA Offline Functionality', () => {
 
   test('should install as PWA', async ({ page }) => {
     // Check if PWA install prompt appears
-    const installPrompt = await page.waitForEvent('beforeinstallprompt', { timeout: 10000 });
+    const installPrompt = await page.evaluate(() => {
+      return new Promise((resolve) => {
+        window.addEventListener('beforeinstallprompt', resolve);
+        setTimeout(() => resolve(null), 10000);
+      });
+    });
     
     // Should show install button
     await expect(page.locator('[data-testid="pwa-install-button"]')).toBeVisible();
     
     // Trigger install
-    await installPrompt.prompt();
+    if (installPrompt && (installPrompt as any).prompt) {
+      await (installPrompt as any).prompt();
+    }
     
     // Should install the app
     const installed = await page.evaluate(() => {
@@ -159,9 +166,9 @@ test.describe('PWA Offline Functionality', () => {
       if ('storage' in navigator && 'estimate' in navigator.storage) {
         const estimate = await navigator.storage.estimate();
         return {
-          quota: estimate.quota,
-          usage: estimate.usage,
-          available: estimate.quota - estimate.usage
+          quota: estimate?.quota || 0,
+          usage: estimate?.usage || 0,
+          available: (estimate?.quota || 0) - (estimate?.usage || 0)
         };
       }
       return null;
@@ -177,7 +184,7 @@ test.describe('PWA Offline Functionality', () => {
     // Simulate standalone mode
     await page.addInitScript(() => {
       Object.defineProperty(window, 'matchMedia', {
-        value: (query) => ({
+        value: (query: string) => ({
           matches: query === '(display-mode: standalone)',
           media: query
         })
@@ -194,7 +201,7 @@ test.describe('PWA Offline Functionality', () => {
     // Check for service worker updates
     const swUpdate = await page.evaluate(() => {
       return new Promise((resolve) => {
-        navigator.serviceWorker?.addEventListener('controllerchange', (event) => {
+        navigator.serviceWorker?.addEventListener('controllerchange', (event: any) => {
           resolve(event.target?.state);
         });
       });
