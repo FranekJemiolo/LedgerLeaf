@@ -47,16 +47,17 @@ export const ExpenseEditor: React.FC<ExpenseEditorProps> = ({
         cost: { amount: 0, currency: 'USD' },
         billing: { frequency: 'monthly', interval: 1 },
         category: [],
-        reminders: { enabled: true, days_before: 3 },
-        usage_tracking: { enabled: true, remind_after_days_unused: 45 },
-        notes: '',
         tags: [],
+        metadata: {
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
       });
     }
-  }, [expense]);
+  }, [expense, setFormData]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prevFormData => ({ ...prevFormData, [field]: value }));
   };
 
   const handleCostChange = (field: 'amount' | 'currency', value: string | number) => {

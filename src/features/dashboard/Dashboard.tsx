@@ -37,10 +37,11 @@ export const Dashboard: React.FC = () => {
             nextDue.setFullYear(nextDue.getFullYear() + 1);
           }
           break;
-        case 'weekly':
+        case 'weekly': {
           const daysUntil = (expense.billing.due_day - now.getDay() + 7) % 7;
           nextDue.setDate(now.getDate() + daysUntil);
           break;
+        }
         case 'quarterly':
           if (nextDue <= now) {
             nextDue.setMonth(nextDue.getMonth() + 3);

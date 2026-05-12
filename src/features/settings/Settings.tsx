@@ -41,7 +41,7 @@ export const Settings: React.FC = () => {
 
   useEffect(() => {
     if (config) {
-      setSettings({
+      const newSettings = {
         currency: config.currency,
         defaultReminderDays: config.default_reminder_days,
         defaultUnusedDays: config.default_unused_days,
@@ -55,9 +55,10 @@ export const Settings: React.FC = () => {
           analytics: false,
           crashReporting: false,
         },
-      });
+      };
+      setSettings(newSettings);
     }
-  }, [config, setSettings]);
+  }, [config]);
 
   const handleSave = async () => {
     setIsSaving(true);
