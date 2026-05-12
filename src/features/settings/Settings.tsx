@@ -20,7 +20,7 @@ interface AppSettings {
 }
 
 export const Settings: React.FC = () => {
-  const { config, loadConfig, updateConfig, expenses, clearAllExpenses } = useAppStore();
+  const { config, updateConfig, expenses, clearAllExpenses } = useAppStore();
   const [settings, setSettings] = useState<AppSettings>({
     currency: 'USD',
     defaultReminderDays: 3,
@@ -107,13 +107,8 @@ export const Settings: React.FC = () => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = async () => {
         try {
-          const content = e.target?.result as string;
-          // Simple CSV parsing for backup restoration
-          const lines = content.split('\n');
-          const headers = lines[0].split(',');
-          
           // This is a simplified import - in a real app, you'd want more robust parsing
           setSaveMessage({ type: 'success', message: 'Data import feature coming soon' });
         } catch (error) {

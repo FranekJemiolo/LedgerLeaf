@@ -4,11 +4,9 @@ import { ExpenseTable } from './features/expenses/ExpenseTable';
 import { ExpenseEditor } from './features/expenses/ExpenseEditor';
 import { Calendar } from './features/calendar/Calendar';
 import { ImportWizard } from './features/import/ImportWizard';
-import { ExportSystem } from './features/export/ExportSystem';
 import { Settings } from './features/settings/Settings';
 import { Expense } from './types';
 import { useAppStore } from './lib/store';
-import { notificationService } from './lib/notifications';
 
 type Tab = 'dashboard' | 'expenses' | 'calendar' | 'import' | 'settings';
 

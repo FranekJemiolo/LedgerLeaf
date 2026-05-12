@@ -266,7 +266,7 @@ export const ExportSystem: React.FC = () => {
                   type="radio"
                   value="csv"
                   checked={exportOptions.format === 'csv'}
-                  onChange={(e) => setExportOptions(prev => ({ ...prev, format: 'csv' }))}
+                  onChange={() => setExportOptions(prev => ({ ...prev, format: 'csv' }))}
                   className="mr-2"
                 />
                 <span className="font-body-sm text-body-sm text-on-surface">CSV</span>
@@ -276,7 +276,7 @@ export const ExportSystem: React.FC = () => {
                   type="radio"
                   value="xlsx"
                   checked={exportOptions.format === 'xlsx'}
-                  onChange={(e) => setExportOptions(prev => ({ ...prev, format: 'xlsx' }))}
+                  onChange={() => setExportOptions(prev => ({ ...prev, format: 'xlsx' }))}
                   className="mr-2"
                 />
                 <span className="font-body-sm text-body-sm text-on-surface">Excel (.xlsx)</span>

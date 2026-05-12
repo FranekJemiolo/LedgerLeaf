@@ -4,7 +4,7 @@ import { Expense } from '../../types';
 import { useAppStore } from '../../lib/store';
 
 export const Dashboard: React.FC = () => {
-  const { dashboardStats, expenses, calculateDashboardStats, setSelectedExpense } = useAppStore();
+  const { dashboardStats, expenses, calculateDashboardStats } = useAppStore();
 
   useEffect(() => {
     calculateDashboardStats();
@@ -18,21 +18,7 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  const getUrgencyColor = (daysUntil: number) => {
-    if (daysUntil < 0) return 'text-red-600 bg-red-50';
-    if (daysUntil <= 3) return 'text-orange-600 bg-orange-50';
-    if (daysUntil <= 7) return 'text-yellow-600 bg-yellow-50';
-    return 'text-green-600 bg-green-50';
-  };
-
-  const getUrgencyText = (daysUntil: number) => {
-    if (daysUntil < 0) return 'Overdue';
-    if (daysUntil === 0) return 'Due today';
-    if (daysUntil === 1) return 'Due tomorrow';
-    if (daysUntil <= 7) return `Due in ${daysUntil} days`;
-    return `Due in ${daysUntil} days`;
-  };
-
+  
   const calculateNextDue = (expense: Expense) => {
     const now = new Date();
     let nextDue = new Date();
