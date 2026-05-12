@@ -1,30 +1,17 @@
-import { readTextFile, writeTextFile, exists, mkdir, readDir, remove } from '@tauri-apps/plugin-fs';
-import { join, documentDir } from '@tauri-apps/api/path';
 import { dump, load } from 'js-yaml';
 import { Expense, ExpenseSchema, Config, ConfigSchema } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 export class StorageService {
-  private appDataDir: string = '';
-  private expensesDir: string = '';
-  private exportsDir: string = '';
-  private importsDir: string = '';
+  private readonly STORAGE_KEYS = {
+    CONFIG: 'ledgerleaf_config',
+    EXPENSES: 'ledgerleaf_expenses',
+    EXPORTS: 'ledgerleaf_exports',
+    IMPORTS: 'ledgerleaf_imports'
+  };
 
   async initialize(): Promise<void> {
     try {
-      // Get app data directory
-      const docDir = await documentDir();
-      this.appDataDir = await join(docDir, 'LedgerLeaf');
-      
-      // Create directories if they don't exist
-      this.expensesDir = await join(this.appDataDir, 'expenses');
-      this.exportsDir = await join(this.appDataDir, 'exports');
-      this.importsDir = await join(this.appDataDir, 'imports');
-
-      await mkdir(this.expensesDir, { recursive: true });
-      await mkdir(this.exportsDir, { recursive: true });
-      await mkdir(this.importsDir, { recursive: true });
-
       // Initialize config if it doesn't exist
       await this.initializeConfig();
     } catch (error) {
@@ -34,17 +21,15 @@ export class StorageService {
   }
 
   private async initializeConfig(): Promise<Config> {
-    const configPath = await join(this.appDataDir, 'config.yml');
-    
     try {
-      const configExists = await exists(configPath);
+      const configData = localStorage.getItem(this.STORAGE_KEYS.CONFIG);
       
-      if (!configExists) {
+      if (!configData) {
         const defaultConfig: Config = {
           currency: 'USD',
           default_reminder_days: 3,
           default_unused_days: 45,
-          app_data_directory: this.appDataDir,
+          app_data_directory: 'localStorage',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
@@ -53,7 +38,9 @@ export class StorageService {
         return defaultConfig;
       }
       
-      return await this.loadConfig();
+      const parsedConfig = load(configData) as any;
+      const validatedConfig = ConfigSchema.parse(parsedConfig);
+      return validatedConfig;
     } catch (error) {
       console.error('Failed to initialize config:', error);
       throw error;
@@ -62,11 +49,13 @@ export class StorageService {
 
   async loadConfig(): Promise<Config> {
     try {
-      const configPath = await join(this.appDataDir, 'config.yml');
-      const configContent = await readTextFile(configPath);
-      const configData = load(configContent) as any;
+      const configData = localStorage.getItem(this.STORAGE_KEYS.CONFIG);
+      if (!configData) {
+        throw new Error('Config not found');
+      }
       
-      const validatedConfig = ConfigSchema.parse(configData);
+      const parsedConfig = load(configData) as any;
+      const validatedConfig = ConfigSchema.parse(parsedConfig);
       return validatedConfig;
     } catch (error) {
       console.error('Failed to load config:', error);
@@ -76,7 +65,6 @@ export class StorageService {
 
   async saveConfig(config: Config): Promise<void> {
     try {
-      const configPath = await join(this.appDataDir, 'config.yml');
       const updatedConfig = {
         ...config,
         updated_at: new Date().toISOString(),
@@ -85,7 +73,7 @@ export class StorageService {
       const validatedConfig = ConfigSchema.parse(updatedConfig);
       const yamlContent = dump(validatedConfig);
       
-      await writeTextFile(configPath, yamlContent);
+      localStorage.setItem(this.STORAGE_KEYS.CONFIG, yamlContent);
     } catch (error) {
       console.error('Failed to save config:', error);
       throw error;
@@ -94,40 +82,25 @@ export class StorageService {
 
   async loadAllExpenses(): Promise<Expense[]> {
     try {
-      const expenses: Expense[] = [];
-      const entries = await readDir(this.expensesDir);
-      
-      for (const entry of entries) {
-        if (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml')) {
-          const expense = await this.loadExpense(entry.name.replace(/\.(yml|yaml)$/, ''));
-          if (expense) {
-            expenses.push(expense);
-          }
-        }
+      const expensesData = localStorage.getItem(this.STORAGE_KEYS.EXPENSES);
+      if (!expensesData) {
+        return [];
       }
       
-      return expenses;
+      const parsedData = load(expensesData) as any;
+      const expenses = Array.isArray(parsedData) ? parsedData : [];
+      
+      return expenses.map((expense: any) => ExpenseSchema.parse(expense));
     } catch (error) {
       console.error('Failed to load expenses:', error);
-      throw error;
+      return [];
     }
   }
 
   async loadExpense(id: string): Promise<Expense | null> {
     try {
-      const fileName = `${this.sanitizeFileName(id)}.yml`;
-      const expensePath = await join(this.expensesDir, fileName);
-      
-      const fileExists = await exists(expensePath);
-      if (!fileExists) {
-        return null;
-      }
-      
-      const content = await readTextFile(expensePath);
-      const data = load(content) as any;
-      
-      const validatedExpense = ExpenseSchema.parse(data);
-      return validatedExpense;
+      const expenses = await this.loadAllExpenses();
+      return expenses.find(expense => expense.id === id) || null;
     } catch (error) {
       console.error(`Failed to load expense ${id}:`, error);
       return null;
@@ -136,9 +109,7 @@ export class StorageService {
 
   async saveExpense(expense: Expense): Promise<void> {
     try {
-      const fileName = `${this.sanitizeFileName(expense.id)}.yml`;
-      const expensePath = await join(this.expensesDir, fileName);
-      
+      const expenses = await this.loadAllExpenses();
       const updatedExpense = {
         ...expense,
         metadata: {
@@ -148,9 +119,16 @@ export class StorageService {
       };
       
       const validatedExpense = ExpenseSchema.parse(updatedExpense);
-      const yamlContent = dump(validatedExpense);
       
-      await writeTextFile(expensePath, yamlContent);
+      const existingIndex = expenses.findIndex(e => e.id === expense.id);
+      if (existingIndex >= 0) {
+        expenses[existingIndex] = validatedExpense;
+      } else {
+        expenses.push(validatedExpense);
+      }
+      
+      const yamlContent = dump(expenses);
+      localStorage.setItem(this.STORAGE_KEYS.EXPENSES, yamlContent);
     } catch (error) {
       console.error(`Failed to save expense ${expense.id}:`, error);
       throw error;
@@ -181,13 +159,11 @@ export class StorageService {
 
   async deleteExpense(id: string): Promise<void> {
     try {
-      const fileName = `${this.sanitizeFileName(id)}.yml`;
-      const expensePath = await join(this.expensesDir, fileName);
+      const expenses = await this.loadAllExpenses();
+      const filteredExpenses = expenses.filter(e => e.id !== id);
       
-      const fileExists = await exists(expensePath);
-      if (fileExists) {
-        await remove(expensePath);
-      }
+      const yamlContent = dump(filteredExpenses);
+      localStorage.setItem(this.STORAGE_KEYS.EXPENSES, yamlContent);
     } catch (error) {
       console.error(`Failed to delete expense ${id}:`, error);
       throw error;
@@ -244,10 +220,17 @@ export class StorageService {
         .join('\n');
       
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const exportPath = await join(this.exportsDir, `expenses-export-${timestamp}.csv`);
+      const exportData = {
+        filename: `expenses-export-${timestamp}.csv`,
+        content: csvContent,
+        timestamp: new Date().toISOString()
+      };
       
-      await writeTextFile(exportPath, csvContent);
-      return exportPath;
+      const existingExports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.EXPORTS) || '[]');
+      existingExports.push(exportData);
+      localStorage.setItem(this.STORAGE_KEYS.EXPORTS, JSON.stringify(existingExports));
+      
+      return csvContent;
     } catch (error) {
       console.error('Failed to export to CSV:', error);
       throw error;
@@ -276,16 +259,8 @@ export class StorageService {
     }
   }
 
-  private sanitizeFileName(fileName: string): string {
-    return fileName
-      .toLowerCase()
-      .replace(/[^a-z0-9-_]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
-
   async getAppDataDirectory(): Promise<string> {
-    return this.appDataDir;
+    return 'localStorage';
   }
 
   async setAppDataDirectory(directory: string): Promise<void> {
@@ -294,20 +269,30 @@ export class StorageService {
       config.app_data_directory = directory;
       config.updated_at = new Date().toISOString();
       
-      // Update internal paths
-      this.appDataDir = directory;
-      this.expensesDir = await join(directory, 'expenses');
-      this.exportsDir = await join(directory, 'exports');
-      this.importsDir = await join(directory, 'imports');
-      
-      // Create new directories
-      await mkdir(this.expensesDir, { recursive: true });
-      await mkdir(this.exportsDir, { recursive: true });
-      await mkdir(this.importsDir, { recursive: true });
-      
       await this.saveConfig(config);
     } catch (error) {
       console.error('Failed to set app data directory:', error);
+      throw error;
+    }
+  }
+
+  async getExports(): Promise<any[]> {
+    try {
+      return JSON.parse(localStorage.getItem(this.STORAGE_KEYS.EXPORTS) || '[]');
+    } catch (error) {
+      console.error('Failed to get exports:', error);
+      return [];
+    }
+  }
+
+  async clearAllData(): Promise<void> {
+    try {
+      localStorage.removeItem(this.STORAGE_KEYS.CONFIG);
+      localStorage.removeItem(this.STORAGE_KEYS.EXPENSES);
+      localStorage.removeItem(this.STORAGE_KEYS.EXPORTS);
+      localStorage.removeItem(this.STORAGE_KEYS.IMPORTS);
+    } catch (error) {
+      console.error('Failed to clear all data:', error);
       throw error;
     }
   }
