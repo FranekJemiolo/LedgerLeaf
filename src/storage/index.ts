@@ -1,6 +1,8 @@
 import { dump, load } from 'js-yaml';
 import { Expense, ExpenseSchema, Config, ConfigSchema } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { fileSystemAccessService } from '../lib/filesystem';
+import { filesystemStorageService } from './filesystem-storage';
 
 export class StorageService {
   private readonly STORAGE_KEYS = {
@@ -12,8 +14,19 @@ export class StorageService {
 
   async initialize(): Promise<void> {
     try {
-      // Initialize config if it doesn't exist
-      await this.initializeConfig();
+      // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        // Use filesystem storage
+        await filesystemStorageService.initialize();
+        console.log('Using filesystem storage');
+      } else {
+        // Fall back to localStorage
+        await this.initializeConfig();
+        console.log('Using localStorage storage');
+      }
     } catch (error) {
       console.error('Failed to initialize storage service:', error);
       throw error;
@@ -49,6 +62,15 @@ export class StorageService {
 
   async loadConfig(): Promise<Config> {
     try {
+      // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        return await filesystemStorageService.loadConfig();
+      }
+
+      // Fall back to localStorage
       const configData = localStorage.getItem(this.STORAGE_KEYS.CONFIG);
       if (!configData) {
         throw new Error('Config not found');
@@ -73,7 +95,15 @@ export class StorageService {
       const validatedConfig = ConfigSchema.parse(updatedConfig);
       const yamlContent = dump(validatedConfig);
       
-      localStorage.setItem(this.STORAGE_KEYS.CONFIG, yamlContent);
+      // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        await filesystemStorageService.saveConfig(validatedConfig);
+      } else {
+        localStorage.setItem(this.STORAGE_KEYS.CONFIG, yamlContent);
+      }
     } catch (error) {
       console.error('Failed to save config:', error);
       throw error;
@@ -82,6 +112,15 @@ export class StorageService {
 
   async loadAllExpenses(): Promise<Expense[]> {
     try {
+      // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        return await filesystemStorageService.loadAllExpenses();
+      }
+
+      // Fall back to localStorage
       const expensesData = localStorage.getItem(this.STORAGE_KEYS.EXPENSES);
       if (!expensesData) {
         return [];
@@ -109,26 +148,34 @@ export class StorageService {
 
   async saveExpense(expense: Expense): Promise<void> {
     try {
-      const expenses = await this.loadAllExpenses();
-      const updatedExpense = {
-        ...expense,
-        metadata: {
-          ...expense.metadata,
-          updated_at: new Date().toISOString(),
-        },
-      };
-      
-      const validatedExpense = ExpenseSchema.parse(updatedExpense);
-      
-      const existingIndex = expenses.findIndex(e => e.id === expense.id);
-      if (existingIndex >= 0) {
-        expenses[existingIndex] = validatedExpense;
+      // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        await filesystemStorageService.saveExpense(expense);
       } else {
-        expenses.push(validatedExpense);
+        const expenses = await this.loadAllExpenses();
+        const updatedExpense = {
+          ...expense,
+          metadata: {
+            ...expense.metadata,
+            updated_at: new Date().toISOString(),
+          },
+        };
+        
+        const validatedExpense = ExpenseSchema.parse(updatedExpense);
+        
+        const existingIndex = expenses.findIndex(e => e.id === expense.id);
+        if (existingIndex >= 0) {
+          expenses[existingIndex] = validatedExpense;
+        } else {
+          expenses.push(validatedExpense);
+        }
+        
+        const yamlContent = dump(expenses);
+        localStorage.setItem(this.STORAGE_KEYS.EXPENSES, yamlContent);
       }
-      
-      const yamlContent = dump(expenses);
-      localStorage.setItem(this.STORAGE_KEYS.EXPENSES, yamlContent);
     } catch (error) {
       console.error(`Failed to save expense ${expense.id}:`, error);
       throw error;
@@ -137,6 +184,15 @@ export class StorageService {
 
   async createExpense(expenseData: Omit<Expense, 'id' | 'metadata'>): Promise<Expense> {
     try {
+      // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        return await filesystemStorageService.createExpense(expenseData);
+      }
+
+      // Fall back to localStorage
       const id = uuidv4();
       const now = new Date().toISOString();
       
@@ -159,11 +215,19 @@ export class StorageService {
 
   async deleteExpense(id: string): Promise<void> {
     try {
-      const expenses = await this.loadAllExpenses();
-      const filteredExpenses = expenses.filter(e => e.id !== id);
-      
-      const yamlContent = dump(filteredExpenses);
-      localStorage.setItem(this.STORAGE_KEYS.EXPENSES, yamlContent);
+      // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        await filesystemStorageService.deleteExpense(id);
+      } else {
+        const expenses = await this.loadAllExpenses();
+        const filteredExpenses = expenses.filter(e => e.id !== id);
+        
+        const yamlContent = dump(filteredExpenses);
+        localStorage.setItem(this.STORAGE_KEYS.EXPENSES, yamlContent);
+      }
     } catch (error) {
       console.error(`Failed to delete expense ${id}:`, error);
       throw error;
@@ -260,20 +324,28 @@ export class StorageService {
   }
 
   async getAppDataDirectory(): Promise<string> {
-    return 'localStorage';
+    // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        return await filesystemStorageService.getAppDataDirectory();
+      }
+
+      return this.STORAGE_KEYS.CONFIG;
   }
 
   async setAppDataDirectory(directory: string): Promise<void> {
-    try {
-      const config = await this.loadConfig();
-      config.app_data_directory = directory;
-      config.updated_at = new Date().toISOString();
-      
-      await this.saveConfig(config);
-    } catch (error) {
-      console.error('Failed to set app data directory:', error);
-      throw error;
-    }
+    // Check if File System Access API is available and has permission
+      const hasFilesystemAccess = fileSystemAccessService.supported && 
+                                   await fileSystemAccessService.verifyDirectoryAccess();
+
+      if (hasFilesystemAccess) {
+        await filesystemStorageService.setAppDataDirectory(directory);
+      } else {
+        // For localStorage, this is just a reference
+        console.log('App data directory set to:', directory);
+      }
   }
 
   async getExports(): Promise<any[]> {
