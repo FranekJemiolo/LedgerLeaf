@@ -2,9 +2,14 @@ import { useEffect, useState } from 'react';
 import { Dashboard } from './features/dashboard/Dashboard';
 import { ExpenseTable } from './features/expenses/ExpenseTable';
 import { ExpenseEditor } from './features/expenses/ExpenseEditor';
+import { Calendar } from './features/calendar/Calendar';
+import { ImportWizard } from './features/import/ImportWizard';
+import { ExportSystem } from './features/export/ExportSystem';
+import { Settings } from './features/settings/Settings';
 import { Expense } from './types';
 import { useAppStore } from './lib/store';
-import { BarChart3, List, Settings, Calendar, Import, FileText } from 'lucide-react';
+import { notificationService } from './lib/notifications';
+import { BarChart3, List, Settings as SettingsIcon, Calendar as CalendarIcon, Import, FileText } from 'lucide-react';
 
 type Tab = 'dashboard' | 'expenses' | 'calendar' | 'import' | 'settings';
 
@@ -46,9 +51,9 @@ function App() {
   const tabs = [
     { id: 'dashboard' as Tab, label: 'Dashboard', icon: BarChart3 },
     { id: 'expenses' as Tab, label: 'Expenses', icon: List },
-    { id: 'calendar' as Tab, label: 'Calendar', icon: Calendar },
+    { id: 'calendar' as Tab, label: 'Calendar', icon: CalendarIcon },
     { id: 'import' as Tab, label: 'Import', icon: Import },
-    { id: 'settings' as Tab, label: 'Settings', icon: Settings },
+    { id: 'settings' as Tab, label: 'Settings', icon: SettingsIcon },
   ];
 
   if (loading) {
@@ -131,27 +136,9 @@ function App() {
             onExpenseCreate={handleExpenseCreate}
           />
         )}
-        {activeTab === 'calendar' && (
-          <div className="text-center py-12">
-            <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Calendar View</h2>
-            <p className="text-gray-600">Calendar view coming soon</p>
-          </div>
-        )}
-        {activeTab === 'import' && (
-          <div className="text-center py-12">
-            <Import className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Import/Export</h2>
-            <p className="text-gray-600">Import and export features coming soon</p>
-          </div>
-        )}
-        {activeTab === 'settings' && (
-          <div className="text-center py-12">
-            <Settings className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Settings</h2>
-            <p className="text-gray-600">Settings panel coming soon</p>
-          </div>
-        )}
+        {activeTab === 'calendar' && <Calendar />}
+        {activeTab === 'import' && <ImportWizard />}
+        {activeTab === 'settings' && <Settings />}
       </main>
 
       {/* Expense Editor Modal */}

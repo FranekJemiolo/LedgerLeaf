@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Expense, Config, FilterState, SortState, DashboardStats } from '../types';
 import { storageService } from '../storage';
+import { notificationService } from './notifications';
 
 interface AppState {
   // Data
@@ -27,6 +28,7 @@ interface AppState {
   calculateDashboardStats: () => void;
   updateConfig: (config: Partial<Config>) => Promise<void>;
   confirmUsage: (expenseId: string) => Promise<void>;
+  clearAllExpenses: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -244,37 +246,52 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  confirmUsage: async (expenseId) => {
-    set({ loading: true, error: null });
+  confirmUsage: async (expenseId: string) => {
     try {
-      const expense = get().expenses.find(e => e.id === expenseId);
-      if (!expense) {
-        throw new Error('Expense not found');
+      await notificationService.confirmUsage(expenseId);
+      // Update expense usage tracking
+      const { expenses } = get();
+      const expense = expenses.find(e => e.id === expenseId);
+      if (expense) {
+        const updatedExpense = {
+          ...expense,
+          usage_tracking: {
+            ...expense.usage_tracking,
+            last_confirmed_use: new Date().toISOString(),
+          },
+          metadata: {
+            ...expense.metadata,
+            updated_at: new Date().toISOString(),
+          },
+        };
+        await storageService.saveExpense(updatedExpense);
+        set({ expenses: expenses.map(e => e.id === expenseId ? updatedExpense : e) });
       }
-
-      const updatedExpense = {
-        ...expense,
-        usage_tracking: {
-          ...expense.usage_tracking,
-          last_confirmed_use: new Date().toISOString(),
-        },
-        metadata: {
-          ...expense.metadata,
-          updated_at: new Date().toISOString(),
-        },
-      };
-
-      await storageService.saveExpense(updatedExpense);
-      const expenses = get().expenses.map(e => e.id === expenseId ? updatedExpense : e);
-      set({ expenses, loading: false });
-      get().calculateDashboardStats();
     } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to confirm usage',
-        loading: false 
-      });
+      console.error('Failed to confirm usage:', error);
+      set({ error: 'Failed to confirm usage' });
     }
   },
+
+  clearAllExpenses: async () => {
+    try {
+      // Clear all expenses from storage
+      await storageService.clearAllData();
+      // Reset state
+      set({ 
+        expenses: [],
+        selectedExpenseId: null,
+        dashboardStats: null,
+        error: null
+      });
+      // Reinitialize with empty config
+      await get().initializeApp();
+    } catch (error) {
+      console.error('Failed to clear all expenses:', error);
+      set({ error: 'Failed to clear all expenses' });
+    }
+  },
+
 }));
 
 // Selectors
