@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../lib/store';
-import { storageService } from '../../storage';
 import { notificationService } from '../../lib/notifications';
+import { exportService } from '../../lib/export-service';
+import type { ExportOptions } from '../../lib/export-service';
 
 interface AppSettings {
   currency: string;
@@ -91,18 +92,25 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleExportData = async () => {
+  const handleExportData = async (format: 'xlsx' | 'csv' | 'json' = 'xlsx') => {
     try {
-      const csvContent = await storageService.exportToCSV(expenses);
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ledgerleaf-backup-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const exportOptions: ExportOptions = {
+        format,
+        includeMetadata: true,
+        sortBy: 'name',
+        sortOrder: 'asc'
+      };
+      
+      const result = await exportService.exportExpenses(expenses, config!, exportOptions);
+      
+      if (result.success) {
+        setSaveMessage({ 
+          type: 'success', 
+          message: `Successfully exported ${result.recordCount} expenses to ${result.filename}` 
+        });
+      } else {
+        setSaveMessage({ type: 'error', message: result.error || 'Export failed' });
+      }
     } catch (error) {
       console.error('Export failed:', error);
       setSaveMessage({ type: 'error', message: 'Failed to export data' });
@@ -306,18 +314,36 @@ export const Settings: React.FC = () => {
         </div>
         
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-body-base text-body-base text-primary">Export Data</p>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">Download all your expenses as a CSV file</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-body-base text-body-base text-primary">Export Data</p>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">Download all your expenses in various formats</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleExportData('xlsx')}
+                  className="flex items-center px-3 py-1 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps hover:opacity-90"
+                >
+                  <span className="material-symbols-outlined">table_chart</span>
+                  Excel
+                </button>
+                <button
+                  onClick={() => handleExportData('csv')}
+                  className="flex items-center px-3 py-1 bg-surface-container border border-outline-variant rounded-lg font-label-caps text-label-caps hover:bg-surface-container-low"
+                >
+                  <span className="material-symbols-outlined">description</span>
+                  CSV
+                </button>
+                <button
+                  onClick={() => handleExportData('json')}
+                  className="flex items-center px-3 py-1 bg-surface-container border border-outline-variant rounded-lg font-label-caps text-label-caps hover:bg-surface-container-low"
+                >
+                  <span className="material-symbols-outlined">code</span>
+                  JSON
+                </button>
+              </div>
             </div>
-            <button
-              onClick={handleExportData}
-              className="flex items-center px-3 py-1 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps hover:opacity-90"
-            >
-              <span className="material-symbols-outlined">download</span>
-              Export
-            </button>
           </div>
 
           <div className="flex items-center justify-between">
