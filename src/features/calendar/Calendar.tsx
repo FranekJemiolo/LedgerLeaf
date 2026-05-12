@@ -15,6 +15,15 @@ export const Calendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
 
+  const getExpensesForDate = (date: Date): Expense[] => {
+    return expenses.filter(expense => {
+      if (expense.status !== 'active') return false;
+
+      const nextDue = calculateNextDueDate(expense, date);
+      return nextDue && isSameDay(nextDue, date);
+    });
+  };
+
   const generateCalendarDays = () => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(monthStart);
@@ -42,15 +51,6 @@ export const Calendar: React.FC = () => {
   useEffect(() => {
     generateCalendarDays();
   }, [currentMonth, expenses]);
-
-  const getExpensesForDate = (date: Date): Expense[] => {
-    return expenses.filter(expense => {
-      if (expense.status !== 'active') return false;
-
-      const nextDue = calculateNextDueDate(expense, date);
-      return nextDue && isSameDay(nextDue, date);
-    });
-  };
 
   const calculateNextDueDate = (expense: Expense, referenceDate: Date): Date | null => {
     const created = new Date(expense.metadata.created_at);

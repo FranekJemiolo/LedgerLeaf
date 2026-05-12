@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../../lib/store';
 import { storageService } from '../../storage';
 import { notificationService } from '../../lib/notifications';
@@ -39,26 +39,22 @@ export const Settings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  useEffect(() => {
-    if (config) {
-      const newSettings = {
-        currency: config.currency,
-        defaultReminderDays: config.default_reminder_days,
-        defaultUnusedDays: config.default_unused_days,
-        theme: 'light' as const,
-        notifications: {
-          enabled: false,
-          paymentReminders: false,
-          usageReminders: false,
-        },
-        privacy: {
-          analytics: false,
-          crashReporting: false,
-        },
-      };
-      setSettings(newSettings);
-    }
-  }, [config]);
+  // Derived state from config
+  const derivedSettings = config ? {
+    currency: config.currency,
+    defaultReminderDays: config.default_reminder_days,
+    defaultUnusedDays: config.default_unused_days,
+    theme: 'light' as const,
+    notifications: {
+      enabled: false,
+      paymentReminders: false,
+      usageReminders: false,
+    },
+    privacy: {
+      analytics: false,
+      crashReporting: false,
+    },
+  } : settings;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -66,9 +62,9 @@ export const Settings: React.FC = () => {
 
     try {
       await updateConfig({
-        currency: settings.currency,
-        default_reminder_days: settings.defaultReminderDays,
-        default_unused_days: settings.defaultUnusedDays,
+        currency: derivedSettings.currency,
+        default_reminder_days: derivedSettings.defaultReminderDays,
+        default_unused_days: derivedSettings.defaultUnusedDays,
         app_data_directory: config?.app_data_directory || 'localStorage',
         created_at: config?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
