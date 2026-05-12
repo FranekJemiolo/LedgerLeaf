@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Save, RotateCcw, Download, Upload, Trash2, Bell, DollarSign, Calendar, Shield } from 'lucide-react';
 import { useAppStore } from '../../lib/store';
 import { storageService } from '../../storage';
 import { notificationService } from '../../lib/notifications';
@@ -160,42 +159,43 @@ export const Settings: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600">Manage your application preferences and data</p>
+      {/* Header */}
+      <div className="text-center space-y-2 mb-8">
+        <h2 className="font-headline-md text-headline-md text-primary">Settings</h2>
+        <p className="font-body-sm text-body-sm text-on-surface-variant">Manage your application preferences and data</p>
       </div>
 
       {/* Save Message */}
       {saveMessage && (
         <div className={`rounded-lg p-4 ${
           saveMessage.type === 'success'
-            ? 'bg-green-50 border border-green-200'
-            : 'bg-red-50 border border-red-200'
+            ? 'bg-success-container text-on-success-container border border-success'
+            : 'bg-error-container text-on-error-container border border-error'
         }`}>
-          <p className={`text-sm ${
-            saveMessage.type === 'success' ? 'text-green-800' : 'text-red-800'
+          <p className={`font-body-sm text-body-sm ${
+            saveMessage.type === 'success' ? 'text-success' : 'text-error'
           }`}>
             {saveMessage.message}
           </p>
         </div>
       )}
 
-      {/* General Settings */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      {/* General Settings Section */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
         <div className="flex items-center mb-4">
-          <DollarSign className="h-5 w-5 text-gray-600 mr-2" />
-          <h2 className="text-lg font-semibold">General Settings</h2>
+          <span className="material-symbols-outlined text-primary mr-2">payments</span>
+          <h3 className="font-headline-md text-headline-md text-primary">General Settings</h3>
         </div>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block font-body-sm text-body-sm text-on-surface-variant mb-2">
               Default Currency
             </label>
             <select
               value={settings.currency}
               onChange={(e) => setSettings(prev => ({ ...prev, currency: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:outline-none"
             >
               {currencies.map(currency => (
                 <option key={currency.code} value={currency.code}>
@@ -206,7 +206,7 @@ export const Settings: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block font-body-sm text-body-sm text-on-surface-variant mb-2">
               Default Payment Reminder Days
             </label>
             <input
@@ -215,15 +215,15 @@ export const Settings: React.FC = () => {
               max="30"
               value={settings.defaultReminderDays}
               onChange={(e) => setSettings(prev => ({ ...prev, defaultReminderDays: parseInt(e.target.value) || 3 }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:outline-none"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
               Days before payment due date to send reminders
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block font-body-sm text-body-sm text-on-surface-variant mb-2">
               Default Unused Service Days
             </label>
             <input
@@ -232,31 +232,31 @@ export const Settings: React.FC = () => {
               max="365"
               value={settings.defaultUnusedDays}
               onChange={(e) => setSettings(prev => ({ ...prev, defaultUnusedDays: parseInt(e.target.value) || 45 }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:outline-none"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
               Days of inactivity before sending usage reminders
             </p>
           </div>
         </div>
       </div>
 
-      {/* Notification Settings */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      {/* Notification Settings Section */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
         <div className="flex items-center mb-4">
-          <Bell className="h-5 w-5 text-gray-600 mr-2" />
-          <h2 className="text-lg font-semibold">Notifications</h2>
+          <span className="material-symbols-outlined text-primary mr-2">notifications</span>
+          <h3 className="font-headline-md text-headline-md text-primary">Notifications</h3>
         </div>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900">Enable Notifications</p>
-              <p className="text-sm text-gray-500">Allow LedgerLeaf to send browser notifications</p>
+              <p className="font-body-base text-body-base text-primary">Enable Notifications</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">Allow LedgerLeaf to send browser notifications</p>
             </div>
             <button
               onClick={requestNotificationPermission}
-              className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+              className="px-3 py-1 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps hover:opacity-90"
             >
               Enable
             </button>
@@ -274,11 +274,10 @@ export const Settings: React.FC = () => {
                 className="mr-2"
               />
               <div>
-                <p className="font-medium text-gray-900">Payment Reminders</p>
-                <p className="text-sm text-gray-500">Get notified before payments are due</p>
+                <p className="font-body-base text-body-base text-primary">Payment Reminders</p>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">Get notified before payments are due</p>
               </div>
             </label>
-
             <label className="flex items-center">
               <input
                 type="checkbox"
@@ -290,43 +289,43 @@ export const Settings: React.FC = () => {
                 className="mr-2"
               />
               <div>
-                <p className="font-medium text-gray-900">Usage Reminders</p>
-                <p className="text-sm text-gray-500">Get reminded about potentially unused services</p>
+                <p className="font-body-base text-body-base text-primary">Usage Reminders</p>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">Get reminded about potentially unused services</p>
               </div>
             </label>
           </div>
         </div>
       </div>
 
-      {/* Data Management */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      {/* Data Management Section */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
         <div className="flex items-center mb-4">
-          <Shield className="h-5 w-5 text-gray-600 mr-2" />
-          <h2 className="text-lg font-semibold">Data Management</h2>
+          <span className="material-symbols-outlined text-primary mr-2">shield</span>
+          <h3 className="font-headline-md text-headline-md text-primary">Data Management</h3>
         </div>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900">Export Data</p>
-              <p className="text-sm text-gray-500">Download all your expenses as a CSV file</p>
+              <p className="font-body-base text-body-base text-primary">Export Data</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">Download all your expenses as a CSV file</p>
             </div>
             <button
               onClick={handleExportData}
-              className="flex items-center px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+              className="flex items-center px-3 py-1 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps hover:opacity-90"
             >
-              <Download className="h-4 w-4 mr-1" />
+              <span className="material-symbols-outlined">download</span>
               Export
             </button>
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900">Import Data</p>
-              <p className="text-sm text-gray-500">Restore expenses from a backup file</p>
+              <p className="font-body-base text-body-base text-primary">Import Data</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">Restore expenses from a backup file</p>
             </div>
-            <label className="flex items-center px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm cursor-pointer">
-              <Upload className="h-4 w-4 mr-1" />
+            <label className="flex items-center px-3 py-1 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps hover:opacity-90 cursor-pointer">
+              <span className="material-symbols-outlined">upload_file</span>
               Import
               <input
                 type="file"
@@ -339,28 +338,28 @@ export const Settings: React.FC = () => {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900">Clear All Data</p>
-              <p className="text-sm text-gray-500">Delete all expenses and settings</p>
+              <p className="font-body-base text-body-base text-primary">Clear All Data</p>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">Delete all expenses and settings</p>
             </div>
             <button
               onClick={handleClearAllData}
-              className="flex items-center px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+              className="flex items-center px-3 py-1 bg-error text-on-error rounded-lg font-label-caps text-label-caps hover:opacity-90"
             >
-              <Trash2 className="h-4 w-4 mr-1" />
+              <span className="material-symbols-outlined">delete</span>
               Clear
             </button>
           </div>
         </div>
       </div>
 
-      {/* App Info */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      {/* App Info Section */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
         <div className="flex items-center mb-4">
-          <SettingsIcon className="h-5 w-5 text-gray-600 mr-2" />
-          <h2 className="text-lg font-semibold">About</h2>
+          <span className="material-symbols-outlined text-primary mr-2">settings</span>
+          <h3 className="font-headline-md text-headline-md text-primary">About</h3>
         </div>
         
-        <div className="space-y-2 text-sm text-gray-600">
+        <div className="space-y-2 font-body-sm text-body-sm text-on-surface-variant">
           <p><strong>LedgerLeaf</strong> - Local-First Expense Tracker</p>
           <p>Version: 1.0.0</p>
           <p>Data Storage: {config?.app_data_directory || 'localStorage'}</p>
@@ -373,24 +372,24 @@ export const Settings: React.FC = () => {
       <div className="flex justify-end gap-3">
         <button
           onClick={handleReset}
-          className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+          className="flex items-center px-4 py-2 bg-surface-container border border-outline-variant rounded-lg font-label-caps text-label-caps hover:bg-surface-container-low"
         >
-          <RotateCcw className="h-4 w-4 mr-2" />
+          <span className="material-symbols-outlined">refresh</span>
           Reset
         </button>
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps hover:opacity-90 disabled:bg-surface-container disabled:text-on-surface-variant disabled:cursor-not-allowed"
         >
           {isSaving ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-on-primary mr-2"></div>
               Saving...
             </>
           ) : (
             <>
-              <Save className="h-4 w-4 mr-2" />
+              <span className="material-symbols-outlined">save</span>
               Save Settings
             </>
           )}

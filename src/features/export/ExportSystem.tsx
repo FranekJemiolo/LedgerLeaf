@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Download, FileText, Table, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
 import { Expense } from '../../types';
 import { useAppStore } from '../../lib/store';
 import { storageService } from '../../storage';
@@ -247,19 +246,20 @@ export const ExportSystem: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Export Expenses</h1>
-        <p className="text-gray-600">Export your expense data to CSV or Excel files</p>
+      {/* Header */}
+      <div className="text-center space-y-2 mb-8">
+        <h2 className="font-headline-md text-headline-md text-primary">Export</h2>
+        <p className="font-body-sm text-body-sm text-on-surface-variant">Export your expense data to CSV or Excel files</p>
       </div>
 
       {/* Export Options */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold mb-4">Export Options</h2>
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
+        <h3 className="font-headline-md text-headline-md text-primary mb-6">Export Options</h3>
         
         <div className="space-y-6">
           {/* Format Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
+            <label className="block font-body-sm text-body-sm text-on-surface-variant mb-2">Export Format</label>
             <div className="flex gap-4">
               <label className="flex items-center">
                 <input
@@ -269,7 +269,7 @@ export const ExportSystem: React.FC = () => {
                   onChange={(e) => setExportOptions(prev => ({ ...prev, format: 'csv' }))}
                   className="mr-2"
                 />
-                <span className="text-sm">CSV</span>
+                <span className="font-body-sm text-body-sm text-on-surface">CSV</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -279,18 +279,18 @@ export const ExportSystem: React.FC = () => {
                   onChange={(e) => setExportOptions(prev => ({ ...prev, format: 'xlsx' }))}
                   className="mr-2"
                 />
-                <span className="text-sm">Excel (.xlsx)</span>
+                <span className="font-body-sm text-body-sm text-on-surface">Excel (.xlsx)</span>
               </label>
             </div>
           </div>
 
           {/* Date Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <label className="block font-body-sm text-body-sm text-on-surface-variant mb-2">Date Range</label>
             <select
               value={exportOptions.dateRange}
               onChange={(e) => setExportOptions(prev => ({ ...prev, dateRange: e.target.value as any }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:outline-none"
             >
               <option value="all">All expenses</option>
               <option value="last30">Last 30 days</option>
@@ -305,14 +305,14 @@ export const ExportSystem: React.FC = () => {
                   type="date"
                   value={exportOptions.customStartDate || ''}
                   onChange={(e) => setExportOptions(prev => ({ ...prev, customStartDate: e.target.value }))}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:outline-none"
                   placeholder="Start date"
                 />
                 <input
                   type="date"
                   value={exportOptions.customEndDate || ''}
                   onChange={(e) => setExportOptions(prev => ({ ...prev, customEndDate: e.target.value }))}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:outline-none"
                   placeholder="End date"
                 />
               </div>
@@ -328,13 +328,13 @@ export const ExportSystem: React.FC = () => {
                 onChange={(e) => setExportOptions(prev => ({ ...prev, includeInactive: e.target.checked }))}
                 className="mr-2"
               />
-              <span className="text-sm text-gray-700">Include inactive expenses</span>
+              <span className="font-body-sm text-body-sm text-on-surface">Include inactive expenses</span>
             </label>
           </div>
 
           {/* Field Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Fields to Export</label>
+            <label className="block font-body-sm text-body-sm text-on-surface-variant mb-2">Fields to Export</label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {allFields.map(field => (
                 <label key={field.key} className="flex items-start">
@@ -345,8 +345,8 @@ export const ExportSystem: React.FC = () => {
                     className="mr-2 mt-0.5"
                   />
                   <div>
-                    <span className="text-sm text-gray-900">{field.label}</span>
-                    <p className="text-xs text-gray-500">{field.description}</p>
+                    <span className="font-body-sm text-body-sm text-on-surface">{field.label}</span>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">{field.description}</p>
                   </div>
                 </label>
               ))}
@@ -356,34 +356,34 @@ export const ExportSystem: React.FC = () => {
       </div>
 
       {/* Export Preview */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold mb-4">Export Preview</h2>
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
+        <h3 className="font-headline-md text-headline-md text-primary mb-6">Export Preview</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-surface-container rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <FileText className="h-5 w-5 text-gray-600 mr-2" />
-              <span className="text-sm font-medium text-gray-900">Records</span>
+              <span className="material-symbols-outlined text-primary mr-2">description</span>
+              <span className="font-body-sm text-body-sm text-primary">Records</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{preview.count}</p>
+            <p className="font-display-sm text-display-sm text-primary">{preview.count}</p>
           </div>
           
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-surface-container rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <Table className="h-5 w-5 text-gray-600 mr-2" />
-              <span className="text-sm font-medium text-gray-900">Total Amount</span>
+              <span className="material-symbols-outlined text-primary mr-2">payments</span>
+              <span className="font-body-sm text-body-sm text-primary">Total Amount</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="font-display-sm text-display-sm text-primary">
               {formatCurrency(preview.totalAmount)}
             </p>
           </div>
           
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-surface-container rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <Calendar className="h-5 w-5 text-gray-600 mr-2" />
-              <span className="text-sm font-medium text-gray-900">Date Range</span>
+              <span className="material-symbols-outlined text-primary mr-2">calendar_month</span>
+              <span className="font-body-sm text-body-sm text-primary">Date Range</span>
             </div>
-            <p className="text-sm text-gray-600 capitalize">{preview.dateRange}</p>
+            <p className="font-body-sm text-body-sm text-on-surface-variant capitalize">{preview.dateRange}</p>
           </div>
         </div>
       </div>
@@ -392,23 +392,23 @@ export const ExportSystem: React.FC = () => {
       {exportResult && (
         <div className={`rounded-lg p-4 ${
           exportResult.success
-            ? 'bg-green-50 border border-green-200'
-            : 'bg-red-50 border border-red-200'
+            ? 'bg-success-container text-on-success-container border border-success'
+            : 'bg-error-container text-on-error-container border border-error'
         }`}>
           <div className="flex items-start">
             {exportResult.success ? (
-              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 mr-2" />
+              <span className="material-symbols-outlined text-success mt-0.5 mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
             ) : (
-              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2" />
+              <span className="material-symbols-outlined text-error mt-0.5 mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
             )}
             <div>
-              <p className={`font-medium ${
-                exportResult.success ? 'text-green-800' : 'text-red-800'
+              <p className={`font-body-base text-body-base ${
+                exportResult.success ? 'text-success' : 'text-error'
               }`}>
                 {exportResult.message}
               </p>
               {exportResult.filename && (
-                <p className="text-sm text-green-700 mt-1">
+                <p className="font-body-sm text-body-sm text-success mt-1">
                   File saved as: {exportResult.filename}
                 </p>
               )}
@@ -422,20 +422,20 @@ export const ExportSystem: React.FC = () => {
         <button
           onClick={handleExport}
           disabled={isExporting || preview.count === 0}
-          className={`flex items-center px-6 py-3 rounded-lg font-medium ${
+          className={`flex items-center px-6 py-3 rounded-lg font-label-caps text-label-caps ${
             isExporting || preview.count === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
+              : 'bg-primary text-on-primary hover:opacity-90'
           }`}
         >
           {isExporting ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-on-primary mr-2"></div>
               Exporting...
             </>
           ) : (
             <>
-              <Download className="h-4 w-4 mr-2" />
+              <span className="material-symbols-outlined">download</span>
               Export {preview.count} Expenses
             </>
           )}

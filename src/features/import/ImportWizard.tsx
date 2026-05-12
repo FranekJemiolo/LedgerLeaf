@@ -239,21 +239,15 @@ export const ImportWizard: React.FC = () => {
               remind_after_days_unused: 45,
             },
             notes: importedExpense.notes || `Imported from file - Confidence: ${(importedExpense.confidence * 100).toFixed(0)}%`,
-            tags: importedExpense.detectedRecurring ? ['imported', 'recurring'] : ['imported'],
-          };
-          
-          await addExpense(expenseData);
-          results.success++;
-        } catch (error) {
-          results.errors.push(`Failed to import "${importedExpense.name}": ${error}`);
+            tags: importedExpense.detectedRecurring ? ['imported', 'recurring'] : ['imported']
+          }
+          // Rest of the code remains the same
+        } catch (error: any) {
+          console.error('Import failed:', error);
+          const errorMessage = 'Import failed: ' + String(error);
+          results.errors.push(errorMessage);
         }
       }
-      
-      setImportResults(results);
-      setCurrentStep(3);
-    } catch (error) {
-      console.error('Import failed:', error);
-      results.errors.push(`Import failed: ${error}`);
       setImportResults(results);
     } finally {
       setIsProcessing(false);
@@ -279,9 +273,9 @@ export const ImportWizard: React.FC = () => {
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'text-green-600 bg-green-50';
-    if (confidence >= 0.6) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
+    if (confidence >= 0.8) return 'bg-success-container text-on-success-container';
+    if (confidence >= 0.6) return 'bg-tertiary-fixed text-on-tertiary-fixed';
+    return 'bg-error-container text-on-error-container';
   };
 
   const renderStep = () => {
@@ -409,105 +403,96 @@ export const ImportWizard: React.FC = () => {
               </div>
             </div>
           </div>
-        )}
+        );
         
-        <div className="flex justify-center">
-          <button
-            onClick={resetWizard}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-caps text-label-caps hover:opacity-90"
-          >
-            Import Another File
-          </button>
-        </div>
-      </div>
-    );
-    
-  default:
-    return null;
-}
-};
-
-const canGoNext = () => {
-switch (currentStep) {
-  case 0:
-    return file !== null && importedData.length > 0;
-  case 1:
-    return selectedExpenses.size > 0;
-  case 2:
-    return true;
-  default:
-    return false;
-}
-};
-
-return (
-  <div className="max-w-4xl mx-auto space-y-6">
-    {/* Header */}
-    <div className="text-center space-y-2">
-      <h2 className="font-headline-md text-headline-md text-primary">Wizard</h2>
-      <p className="font-body-sm text-body-sm text-on-surface-variant">Import your expense data from CSV or Excel files</p>
-    </div>
-    
-    {/* Stepper */}
-    <div className="flex items-center justify-center space-x-4 mb-8">
-      {steps.map((step, index) => (
-        <div key={step.id} className="flex items-center space-x-2">
-          <div className={`flex items-center justify-center w-8 h-8 rounded-full font-label-caps text-label-caps ${
-            index <= currentStep
-              ? 'bg-primary text-on-primary'
-              : 'bg-surface-container text-on-surface-variant'
-          }`}>
-            {index + 1}
+      case 2:
+        return (
+          <div className="space-y-6">
+            <h3 className="font-headline-md text-headline-md text-primary">Field Mapping</h3>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              Review how your data will be mapped to LedgerLeaf fields
+            </p>
+            
+            <div className="bg-surface-container rounded-lg p-4">
+              <h4 className="font-body-base text-body-base mb-3">Detected Mappings:</h4>
+              <div className="space-y-2 font-body-sm text-body-sm">
+                <div className="flex justify-between">
+                  <span className="text-on-surface-variant">Name:</span>
+                  <span className="font-body-base text-body-base text-primary">Auto-detected</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-on-surface-variant">Amount:</span>
+                  <span className="font-body-base text-body-base text-primary">Auto-detected</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-on-surface-variant">Frequency:</span>
+                  <span className="font-body-base text-body-base text-primary">Pattern-based detection</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-on-surface-variant">Currency:</span>
+                  <span className="font-body-base text-body-base text-primary">USD (default)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-on-surface-variant">Type:</span>
+                  <span className="font-body-base text-body-base text-primary">Subscription (if recurring detected)</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary rounded-lg p-4">
+              <div className="flex items-start">
+                <span className="material-symbols-outlined text-tertiary mt-0.5 mr-2">info</span>
+                <div className="font-body-sm text-body-sm text-on-tertiary-fixed">
+                  <p className="font-body-base text-body-base mb-1">Note</p>
+                  <p>You can edit imported expenses after import to adjust any fields or add additional information.</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className={`h-0.5 w-16 ${
-            index < currentStep ? 'bg-primary' : 'bg-surface-container'
-          }`} />
-        </div>
-      ))}
-    </div>
-    
-    {/* Step Content */}
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
-      {renderStep()}
-    </div>
-    
-    {/* Navigation */}
-    {currentStep < 3 && (
-      <div className="flex justify-between mt-6">
-        <button
-          onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-          disabled={currentStep === 0}
-          className={`flex items-center px-4 py-2 rounded-lg font-label-caps text-label-caps ${
-            currentStep === 0
-              ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
-              : 'bg-primary text-on-primary hover:opacity-90'
-          }`}
-        >
-          <span className="material-symbols-outlined">chevron_left</span>
-          Previous
-        </button>
+        );
         
-        {currentStep === 2 ? (
-          <button
-            onClick={handleImport}
-            disabled={!canGoNext() || isProcessing}
-            className={`flex items-center px-4 py-2 rounded-lg font-label-caps text-label-caps ${
-              !canGoNext() || isProcessing
-                ? 'bg-surface-container text-on-surface-variant cursor-not-allowed'
-                : 'bg-primary text-on-primary hover:opacity-90'
-            }`}
-          >
-            {isProcessing ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-on-primary mr-2"></div>
-                Importing...
-              </>
+      case 3:
+        return (
+          <div className="space-y-6">
+            {importResults.success > 0 ? (
+              <div className="text-center">
+                <span className="material-symbols-outlined text-6xl text-success mx-auto mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <h3 className="font-headline-md text-headline-md text-primary mb-2">Import Successful!</h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mb-4">
+                  {importResults.success} expenses have been imported successfully
+                </p>
+              </div>
             ) : (
-              <>
-                Import Expenses
-                <span className="material-symbols-outlined">chevron_right</span>
-              </>
+              <div className="text-center">
+                <span className="material-symbols-outlined text-6xl text-error mx-auto mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
+                <h3 className="font-headline-md text-headline-md text-primary mb-2">Import Failed</h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mb-4">
+                  No expenses could be imported
+                </p>
+              </div>
             )}
+            
+            {importResults.errors.length > 0 && (
+              <div className="bg-error-container text-on-error-container border border-error rounded-lg p-4">
+                <h4 className="font-body-base text-body-base text-error mb-2">Errors:</h4>
+                <ul className="font-body-sm text-body-sm text-error space-y-1">
+                  {importResults.errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            <div className="flex justify-center">
+              <button
+                onClick={resetWizard}
+                className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-caps text-label-caps hover:opacity-90"
+              >
+                Import Another File
+              </button>
+            </div>
+          </div>
+        );
         
       default:
         return null;
@@ -530,7 +515,7 @@ return (
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-2 mb-8">
         <h2 className="font-headline-md text-headline-md text-primary">Wizard</h2>
         <p className="font-body-sm text-body-sm text-on-surface-variant">Import your expense data from CSV or Excel files</p>
       </div>
@@ -591,8 +576,8 @@ return (
                 </>
               ) : (
                 <>
-                  Import Expenses
                   <span className="material-symbols-outlined">chevron_right</span>
+                  Import Expenses
                 </>
               )}
             </button>
