@@ -12,90 +12,42 @@
 # Error details
 
 ```
-Error: expect(locator).toContainText(expected) failed
+Error: expect(locator).toBeVisible() failed
 
-Locator: locator('h1')
-Expected substring: "LedgerLeaf"
-Error: strict mode violation: locator('h1') resolved to 2 elements:
-    1) <h1 class="text-xl font-bold text-gray-900">LedgerLeaf</h1> aka getByRole('heading', { name: 'LedgerLeaf' })
-    2) <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1> aka getByRole('heading', { name: 'Dashboard' })
+Locator: locator('text=Local-First Expense Tracker')
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
 
 Call log:
-  - Expect "toContainText" with timeout 5000ms
-  - waiting for locator('h1')
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('text=Local-First Expense Tracker')
 
 ```
 
-# Page snapshot
-
 ```yaml
-- generic [ref=e3]:
-  - banner [ref=e4]:
-    - generic [ref=e7]:
-      - heading "LedgerLeaf" [level=1] [ref=e8]
-      - text: Local-First Expense Tracker
-  - navigation [ref=e9]:
-    - generic [ref=e11]:
-      - button "Dashboard" [ref=e12]:
-        - img [ref=e13]
-        - text: Dashboard
-      - button "Expenses" [ref=e15]:
-        - img [ref=e16]
-        - text: Expenses
-      - button "Calendar" [ref=e17]:
-        - img [ref=e18]
-        - text: Calendar
-      - button "Import" [ref=e20]:
-        - img [ref=e21]
-        - text: Import
-      - button "Settings" [ref=e24]:
-        - img [ref=e25]
-        - text: Settings
-  - main [ref=e28]:
-    - generic [ref=e29]:
-      - generic [ref=e30]:
-        - generic [ref=e31]:
-          - heading "Dashboard" [level=1] [ref=e32]
-          - paragraph [ref=e33]: Overview of your recurring expenses and obligations
-        - button "Add Expense" [ref=e34]:
-          - img [ref=e35]
-          - text: Add Expense
-      - generic [ref=e36]:
-        - generic [ref=e38]:
-          - generic [ref=e39]:
-            - paragraph [ref=e40]: Monthly Recurring
-            - paragraph [ref=e41]: $0.00
-          - img [ref=e43]
-        - generic [ref=e47]:
-          - generic [ref=e48]:
-            - paragraph [ref=e49]: Upcoming (30 days)
-            - paragraph [ref=e50]: "0"
-          - img [ref=e52]
-        - generic [ref=e55]:
-          - generic [ref=e56]:
-            - paragraph [ref=e57]: Overdue
-            - paragraph [ref=e58]: "0"
-          - img [ref=e60]
-        - generic [ref=e63]:
-          - generic [ref=e64]:
-            - paragraph [ref=e65]: Potentially Unused
-            - paragraph [ref=e66]: "0"
-          - img [ref=e68]
-      - generic [ref=e71]:
-        - generic [ref=e72]:
-          - generic [ref=e73]:
-            - heading "Upcoming Payments" [level=2] [ref=e74]
-            - paragraph [ref=e75]: Next 30 days
-          - generic [ref=e77]:
-            - img [ref=e78]
-            - paragraph [ref=e80]: No upcoming payments in the next 30 days
-        - generic [ref=e81]:
-          - generic [ref=e82]:
-            - heading "Category Breakdown" [level=2] [ref=e83]
-            - paragraph [ref=e84]: Monthly spending by category
-          - generic [ref=e86]:
-            - img [ref=e87]
-            - paragraph [ref=e89]: No categories to display
+- banner:
+  - text: account_balance_wallet
+  - heading "LedgerLeaf" [level=1]
+  - button "add"
+- main:
+  - heading "Monthly Estimated Recurring" [level=3]
+  - text: $0.00+4% vs last month Utilities$0.00 Subscriptions$0.00
+  - heading "Optimization Score" [level=3]
+  - text: "82"
+  - img
+  - paragraph: Saving $12/mo could improve your score.
+  - heading "Upcoming Payments" [level=3]
+  - text: Next 7 Days
+  - heading "Potentially Unused" [level=3]
+  - img "Financial overview"
+  - paragraph: Financial Clarity Achieved.
+- navigation:
+  - button "dashboard Dashboard"
+  - button "list_alt Inventory"
+  - button "calendar_today Calendar"
+  - button "auto_awesome Wizard"
+  - button "settings Settings"
 ```
 
 # Test source
@@ -107,14 +59,14 @@ Call log:
   4  |   test.beforeEach(async ({ page }) => {
   5  |     await page.goto('/');
   6  |     // Wait for app to load
-> 7  |     await expect(page.locator('h1')).toContainText('LedgerLeaf');
-     |                                      ^ Error: expect(locator).toContainText(expected) failed
+  7  |     await expect(page.locator('h1')).toContainText('LedgerLeaf');
   8  |   });
   9  | 
   10 |   test('should load the application', async ({ page }) => {
   11 |     // Check that the main elements are present
   12 |     await expect(page.locator('h1')).toContainText('LedgerLeaf');
-  13 |     await expect(page.locator('text=Local-First Expense Tracker')).toBeVisible();
+> 13 |     await expect(page.locator('text=Local-First Expense Tracker')).toBeVisible();
+     |                                                                    ^ Error: expect(locator).toBeVisible() failed
   14 |   });
   15 | 
   16 |   test('should have working navigation', async ({ page }) => {
