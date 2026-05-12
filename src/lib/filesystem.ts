@@ -34,7 +34,7 @@ export class FileSystemAccessService {
   private isSupported: boolean = false;
 
   constructor() {
-    this.isSupported = 'showDirectoryPicker' in window;
+    this.isSupported = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
   }
 
   get supported(): boolean {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { format, addDays, addMonths, subMonths, isSameDay, isSameDay, differenceInDays } from 'date-fns';
+import { format, addDays, addMonths, subMonths, isSameDay, differenceInDays } from 'date-fns';
 import { Expense } from '../../types';
 import { useAppStore } from '../../lib/store';
 
@@ -13,7 +13,7 @@ export const Calendar: React.FC = () => {
   const { expenses } = useAppStore();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [calendarDays] = useState<CalendarDay[]>([]);
 
   const calculateNextDueDate = (expense: Expense, referenceDate: Date): Date | null => {
     
@@ -43,8 +43,9 @@ export const Calendar: React.FC = () => {
           }
           break;
       }
+      return nextDue;
     }
-    return nextDue;
+    return null;
   };
 
   const getExpensesForDate = (date: Date): Expense[] => {
@@ -80,7 +81,7 @@ export const Calendar: React.FC = () => {
   const getMonthTotal = () => {
     return calendarDays
       .filter(day => day.isCurrentMonth)
-      .reduce((total: number, day) => {
+      .reduce((_total: number, day) => {
         return day.expenses.reduce((dayTotal: number, expense) => dayTotal + expense.cost.amount, 0);
       }, 0);
   };

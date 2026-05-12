@@ -6,6 +6,9 @@ test.describe('Filesystem Storage', () => {
   test.beforeEach(async () => {
     // Mock File System Access API for testing
     await mockFileSystemAccess();
+    
+    // Initialize filesystem storage for each test
+    await filesystemStorageService.initialize();
   });
 
   test('should initialize filesystem storage', async () => {
@@ -15,10 +18,10 @@ test.describe('Filesystem Storage', () => {
   test('should create and retrieve expense', async () => {
     const testExpense = {
       name: 'Test Expense',
-      type: 'subscription',
-      status: 'active',
+      type: 'subscription' as const,
+      status: 'active' as const,
       cost: { amount: 99.99, currency: 'USD' },
-      billing: { frequency: 'monthly', interval: 1, due_day: 15 },
+      billing: { frequency: 'monthly' as const, interval: 1, due_day: 15 },
       category: ['test'],
       reminders: { enabled: true, days_before: 3 },
       usage_tracking: { enabled: true, remind_after_days_unused: 45 },
@@ -172,8 +175,7 @@ test.describe('Filesystem Storage', () => {
 
   test('should validate expense data', async () => {
     const invalidExpense = {
-      id: 'invalid-1',
-      name: '', // Invalid: empty name
+      name: 'Error Test',
       type: 'subscription' as const,
       status: 'active' as const,
       cost: { amount: -10, currency: 'USD' }, // Invalid: negative amount
@@ -186,7 +188,7 @@ test.describe('Filesystem Storage', () => {
         updated_at: new Date().toISOString()
       },
       notes: 'Invalid test',
-      tags: ['invalid']
+      tags: ['error']
     };
 
     await expect(filesystemStorageService.createExpense(invalidExpense)).rejects.toThrow();
@@ -271,7 +273,6 @@ test.describe('Filesystem Storage', () => {
   test('should import expenses', async () => {
     const importExpenses = [
       {
-        id: 'import-1',
         name: 'Import Test 1',
         type: 'subscription' as const,
         status: 'active' as const,
@@ -288,7 +289,6 @@ test.describe('Filesystem Storage', () => {
         tags: ['import1']
       },
       {
-        id: 'import-2',
         name: 'Import Test 2',
         type: 'service' as const,
         status: 'active' as const,

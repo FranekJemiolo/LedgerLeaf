@@ -46,18 +46,7 @@ function App() {
     setShowMigrationModal(false);
   };
 
-  const handleExpenseEdit = (expense: Expense) => {
-    setSelectedExpense(expense);
-    setShowEditor(true);
-  };
-
   const handleExpenseCreate = () => {
-    setSelectedExpense(undefined);
-    setShowEditor(true);
-  };
-
-  const handleEditorSave = () => {
-    setShowEditor(false);
     setSelectedExpense(undefined);
   };
 
@@ -127,7 +116,7 @@ function App() {
         {activeTab === 'expenses' && (
           <ExpenseTable
             onExpenseSelect={handleExpenseSelect}
-            onExpenseEdit={handleExpenseEdit}
+            onExpenseEdit={handleExpenseSelect}
             onExpenseCreate={handleExpenseCreate}
           />
         )}
@@ -160,8 +149,9 @@ function App() {
       {showEditor && (
         <ExpenseEditor
           expense={selectedExpense}
-          onClose={() => setShowEditor(false)}
-          onSave={handleExpenseEdit}
+          isOpen={showEditor}
+          onClose={handleEditorClose}
+          onSave={handleEditorClose}
         />
       )}
       

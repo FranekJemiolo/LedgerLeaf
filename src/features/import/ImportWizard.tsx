@@ -403,3 +403,5 @@ export const ImportWizard: React.FC = () => {
     </div>
   );
 };
+
+export default ImportWizard;
