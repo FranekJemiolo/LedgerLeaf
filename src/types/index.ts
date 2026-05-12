@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Core frequency types
-export const FrequencySchema = z.enum(['daily', 'weekly', 'monthly', 'quarterly', 'yearly']);
+export const FrequencySchema = z.enum(['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'one-time']);
 export type Frequency = z.infer<typeof FrequencySchema>;
 
 // Cost schema
