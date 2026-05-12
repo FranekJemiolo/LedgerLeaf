@@ -7,6 +7,8 @@ import { ImportWizard } from './features/import/ImportWizard';
 import { Settings } from './features/settings/Settings';
 import { Expense } from './types';
 import { useAppStore } from './lib/store';
+import { storageMigrationService } from './lib/storage-migration';
+import { MigrationModal } from './features/migration/MigrationModal';
 
 type Tab = 'dashboard' | 'expenses' | 'calendar' | 'import' | 'settings';
 
@@ -15,14 +17,33 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>();
   const [showEditor, setShowEditor] = useState(false);
+  const [showMigrationModal, setShowMigrationModal] = useState(false);
 
   useEffect(() => {
     initializeApp();
+    
+    // Check if migration is needed after app initialization
+    const checkMigration = async () => {
+      try {
+        const status = await storageMigrationService.getMigrationStatus();
+        if (status.needsMigration) {
+          setShowMigrationModal(true);
+        }
+      } catch (error) {
+        console.error('Failed to check migration status:', error);
+      }
+    };
+    
+    checkMigration();
   }, [initializeApp]);
 
   const handleExpenseSelect = (expense: Expense) => {
     setSelectedExpense(expense);
     setShowEditor(true);
+  };
+
+  const handleMigrationComplete = () => {
+    setShowMigrationModal(false);
   };
 
   const handleExpenseEdit = (expense: Expense) => {
@@ -136,12 +157,21 @@ function App() {
       </nav>
 
       {/* Expense Editor Modal */}
-      <ExpenseEditor
-        expense={selectedExpense}
-        isOpen={showEditor}
-        onClose={handleEditorClose}
-        onSave={handleEditorSave}
-      />
+      {showEditor && (
+        <ExpenseEditor
+          expense={selectedExpense}
+          onClose={() => setShowEditor(false)}
+          onSave={handleExpenseEdit}
+        />
+      )}
+      
+      {showMigrationModal && (
+        <MigrationModal
+          isOpen={showMigrationModal}
+          onClose={handleMigrationComplete}
+          onComplete={handleMigrationComplete}
+        />
+      )}
     </div>
   );
 }
