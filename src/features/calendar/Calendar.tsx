@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isSameDay, differenceInDays } from 'date-fns';
+import { format, addDays, addMonths, subMonths, isSameDay, isSameDay, differenceInDays } from 'date-fns';
 import { Expense } from '../../types';
 import { useAppStore } from '../../lib/store';
 
@@ -56,30 +56,7 @@ export const Calendar: React.FC = () => {
     });
   };
 
-  const generateCalendarDays = () => {
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(monthStart);
-    const startDate = startOfWeek(monthStart);
-    const endDate = endOfWeek(monthEnd);
-
-    const days: CalendarDay[] = [];
-    let currentDate = startDate;
-
-    while (currentDate <= endDate) {
-      const dayExpenses = getExpensesForDate(currentDate);
-      
-      days.push({
-        date: currentDate,
-        isCurrentMonth: isSameMonth(currentDate, monthStart),
-        expenses: dayExpenses,
-      });
-
-      currentDate = addDays(currentDate, 1);
-    }
-
-    setCalendarDays(days);
-  };
-
+  
   const formatCurrency = (amount: number, currency: string = 'USD') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -103,8 +80,8 @@ export const Calendar: React.FC = () => {
   const getMonthTotal = () => {
     return calendarDays
       .filter(day => day.isCurrentMonth)
-      .reduce((total, day) => {
-        return day.expenses.reduce((dayTotal, expense) => dayTotal + expense.cost.amount, 0);
+      .reduce((total: number, day) => {
+        return day.expenses.reduce((dayTotal: number, expense) => dayTotal + expense.cost.amount, 0);
       }, 0);
   };
 
