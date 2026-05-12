@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isSameDay, differenceInDays } from 'date-fns';
 import { Expense } from '../../types';
 import { useAppStore } from '../../lib/store';
@@ -14,6 +14,38 @@ export const Calendar: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+
+  const calculateNextDueDate = (expense: Expense, referenceDate: Date): Date | null => {
+    
+    if (expense.billing.due_day) {
+      let nextDue = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), expense.billing.due_day);
+      
+      switch (expense.billing.frequency) {
+        case 'daily':
+          nextDue = referenceDate;
+          break;
+        case 'weekly':
+          nextDue = addDays(referenceDate, (expense.billing.due_day - referenceDate.getDay() + 7) % 7);
+          break;
+        case 'monthly':
+          if (nextDue <= referenceDate) {
+            nextDue.setMonth(nextDue.getMonth() + 1);
+          }
+          break;
+        case 'quarterly':
+          if (nextDue <= referenceDate) {
+            nextDue.setMonth(nextDue.getMonth() + 3);
+          }
+          break;
+        case 'yearly':
+          if (nextDue <= referenceDate) {
+            nextDue.setFullYear(nextDue.getFullYear() + 1);
+          }
+          break;
+      }
+    }
+    return nextDue;
+  };
 
   const getExpensesForDate = (date: Date): Expense[] => {
     return expenses.filter(expense => {
@@ -48,47 +80,6 @@ export const Calendar: React.FC = () => {
     setCalendarDays(days);
   };
 
-  useEffect(() => {
-    generateCalendarDays();
-  }, [currentMonth, expenses]);
-
-  const calculateNextDueDate = (expense: Expense, referenceDate: Date): Date | null => {
-    const created = new Date(expense.metadata.created_at);
-    
-    if (expense.billing.due_day) {
-      let nextDue = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), expense.billing.due_day);
-      
-      switch (expense.billing.frequency) {
-        case 'daily':
-          nextDue = referenceDate;
-          break;
-        case 'weekly':
-          nextDue = addDays(referenceDate, (expense.billing.due_day - referenceDate.getDay() + 7) % 7);
-          break;
-        case 'monthly':
-          if (nextDue < referenceDate) {
-            nextDue.setMonth(nextDue.getMonth() + 1);
-          }
-          break;
-        case 'quarterly':
-          nextDue.setMonth(Math.floor((referenceDate.getMonth() / 3)) * 3);
-          if (nextDue < referenceDate) {
-            nextDue.setMonth(nextDue.getMonth() + 3);
-          }
-          break;
-        case 'yearly':
-          if (nextDue < referenceDate) {
-            nextDue.setFullYear(nextDue.getFullYear() + 1);
-          }
-          break;
-      }
-
-      return nextDue >= created ? nextDue : null;
-    }
-
-    return null;
-  };
-
   const formatCurrency = (amount: number, currency: string = 'USD') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -106,35 +97,34 @@ export const Calendar: React.FC = () => {
 
   const handleToday = () => {
     setCurrentMonth(new Date());
-    setSelectedDate(new Date());
-  };
-
-  const getDayTotal = (dayExpenses: Expense[]) => {
-    return dayExpenses.reduce((total, expense) => total + expense.cost.amount, 0);
+    setSelectedDate(null);
   };
 
   const getMonthTotal = () => {
     return calendarDays
       .filter(day => day.isCurrentMonth)
-      .reduce((total, day) => total + getDayTotal(day.expenses), 0);
+      .reduce((total, day) => {
+        return day.expenses.reduce((dayTotal, expense) => dayTotal + expense.cost.amount, 0);
+      }, 0);
   };
 
-  const getUrgencyColor = (date: Date) => {
-    const today = new Date();
-    const daysUntil = differenceInDays(date, today);
+  const getUrgencyColor = (date: Date): string => {
+    const upcomingExpenses = calendarDays
+      .filter(day => isSameDay(day.date, date))
+      .flatMap(day => day.expenses);
+
+    if (upcomingExpenses.length === 0) return 'text-gray-400';
     
-    if (daysUntil < 0) return 'text-error';
-    if (daysUntil === 0) return 'text-tertiary';
-    if (daysUntil <= 3) return 'text-tertiary';
-    if (daysUntil <= 7) return 'text-secondary';
-    return 'text-on-surface-variant';
+    const hasOverdue = upcomingExpenses.some(expense => {
+      const nextDue = calculateNextDueDate(expense, date);
+      return nextDue && nextDue < date;
+    });
+
+    return hasOverdue ? 'text-red-500' : 'text-orange-500';
   };
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   return (
     <div className="space-y-6">
@@ -292,7 +282,7 @@ export const Calendar: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="font-body-base text-body-base text-on-surface">Day Total:</span>
                     <span className="font-data-tabular text-data-tabular text-primary">
-                      {formatCurrency(getDayTotal(selectedDayExpenses))}
+                      {formatCurrency(selectedDayExpenses.reduce((total, expense) => total + expense.cost.amount, 0))}
                     </span>
                   </div>
                 </div>
