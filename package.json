@@ -15,7 +15,8 @@
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "pre-commit": "./.husky/pre-commit"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",
