@@ -20,7 +20,7 @@ interface ImportStep {
 }
 
 export const ImportWizard: React.FC = () => {
-  const { } = useAppStore();
+  useAppStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedExpense[]>([]);
@@ -118,9 +118,7 @@ export const ImportWizard: React.FC = () => {
     const results = { success: 0, errors: [] };
     
     try {
-      for (const _ of selectedExpenses) {
-        results.success++;
-      }
+      results.success = selectedExpenses.size;
       setImportResults(results);
     } finally {
       setIsProcessing(false);

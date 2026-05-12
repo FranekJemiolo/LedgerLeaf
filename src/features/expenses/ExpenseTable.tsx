@@ -37,7 +37,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
   
   const calculateNextDue = (expense: Expense) => {
     const now = new Date();
-    let nextDue = new Date();
+    const nextDue = new Date();
     
     if (expense.billing.due_day) {
       nextDue.setDate(expense.billing.due_day);

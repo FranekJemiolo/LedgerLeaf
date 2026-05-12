@@ -172,7 +172,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (expense.status !== 'active') return false;
       
       // Calculate next due date based on billing frequency
-      let nextDue = new Date();
+      const nextDue = new Date();
       if (expense.billing.due_day) {
         nextDue.setDate(expense.billing.due_day);
         if (nextDue < now) {
@@ -188,7 +188,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (expense.status !== 'active') return false;
       
       // Check if it's overdue based on billing
-      let lastDue = new Date();
+      const lastDue = new Date();
       if (expense.billing.due_day) {
         lastDue.setDate(expense.billing.due_day);
         lastDue.setMonth(lastDue.getMonth() - 1);
@@ -353,15 +353,15 @@ export const useFilteredExpenses = () => {
       
       if (aValue === undefined || bValue === undefined) return 0;
       
-      let comparison = 0;
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        comparison = aValue.localeCompare(bValue);
+        const comparison = aValue.localeCompare(bValue);
+        return sortState.direction === 'desc' ? -comparison : comparison;
       } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-        comparison = aValue - bValue;
+        const comparison = aValue - bValue;
+        return sortState.direction === 'desc' ? -comparison : comparison;
       } else {
-        comparison = String(aValue).localeCompare(String(bValue));
+        const comparison = String(aValue).localeCompare(String(bValue));
+        return sortState.direction === 'desc' ? -comparison : comparison;
       }
-      
-      return sortState.direction === 'desc' ? -comparison : comparison;
     });
 };

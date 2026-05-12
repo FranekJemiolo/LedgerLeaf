@@ -141,7 +141,7 @@ export class NotificationService {
 
   private calculateNextDueDate(expense: Expense): Date | null {
     const now = new Date();
-    let nextDue = new Date();
+    const nextDue = new Date();
 
     if (expense.billing.due_day) {
       nextDue.setDate(expense.billing.due_day);
@@ -150,10 +150,11 @@ export class NotificationService {
         case 'daily':
           nextDue.setDate(now.getDate() + 1);
           break;
-        case 'weekly':
+        case 'weekly': {
           const daysUntil = (expense.billing.due_day - now.getDay() + 7) % 7;
           nextDue.setDate(now.getDate() + daysUntil);
           break;
+        }
         case 'monthly':
           nextDue.setMonth(now.getMonth() + 1);
           if (nextDue <= now) {

@@ -70,7 +70,7 @@ export const ExportSystem: React.FC = () => {
       case 'lastyear':
         startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
         break;
-      case 'custom':
+      case 'custom': {
         if (exportOptions.customStartDate) {
           startDate = new Date(exportOptions.customStartDate);
         } else {
@@ -80,6 +80,7 @@ export const ExportSystem: React.FC = () => {
           endDate = new Date(exportOptions.customEndDate);
         }
         break;
+      }
       default:
         startDate = new Date(0); // Beginning of time
     }

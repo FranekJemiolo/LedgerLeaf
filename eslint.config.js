@@ -35,6 +35,7 @@ export default [
         NodeJS: 'readonly',
         URL: 'readonly',
         Blob: 'readonly',
+        File: 'readonly',
       },
     },
     plugins: {
