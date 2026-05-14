@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { importMappingService } from '../../lib/import-mapping';
-import type { ImportField, ImportMapping, ImportMappingResult, ImportPreview } from '../../lib/import-mapping';
+import type { ImportMapping, ImportMappingResult, ImportPreview } from '../../lib/import-mapping';
 
 interface ImportMappingProps {
   importData: any[];
@@ -20,7 +20,6 @@ export const ImportMappingComponent: React.FC<ImportMappingProps> = ({
   useEffect(() => {
     if (importData && importData.length > 0) {
       const result = importMappingService.suggestMapping(importData);
-      setMappingResult(result);
       
       // Auto-select high-confidence mappings
       const autoMapping: ImportMapping = {};
@@ -29,6 +28,8 @@ export const ImportMappingComponent: React.FC<ImportMappingProps> = ({
           autoMapping[suggestion.field] = suggestion.suggestedColumn;
         }
       });
+      
+      setMappingResult(result);
       setSelectedMapping(autoMapping);
     }
   }, [importData]);
@@ -42,7 +43,7 @@ export const ImportMappingComponent: React.FC<ImportMappingProps> = ({
 
   const handleApplyMapping = () => {
     if (Object.keys(selectedMapping).length === 0) {
-      alert('Please map at least one required field (Name, Type, Status, Amount, Currency)');
+      window.alert('Please map at least one required field (Name, Type, Status, Amount, Currency)');
       return;
     }
 
@@ -54,7 +55,7 @@ export const ImportMappingComponent: React.FC<ImportMappingProps> = ({
     if (preview && preview.validRows > 0) {
       onMappingComplete(selectedMapping);
     } else {
-      alert('No valid data to import. Please check your mapping and try again.');
+      window.alert('No valid data to import. Please check your mapping and try again.');
     }
   };
 

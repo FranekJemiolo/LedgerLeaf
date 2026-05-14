@@ -1,5 +1,5 @@
 import { Expense, Config } from '../types';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 export interface ExportOptions {
@@ -165,9 +165,10 @@ export class ExportService {
   }
 
   private async exportToXLSX(expenses: Expense[], config: Config, options: ExportOptions): Promise<Blob> {
-    const workbook = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
     
     // Main expenses sheet
+    const expensesSheet = workbook.addWorksheet('Expenses');
     const expensesData = expenses.map(expense => ({
       'ID': expense.id,
       'Name': expense.name,
@@ -192,27 +193,45 @@ export class ExportService {
       })
     }));
     
-    const expensesSheet = XLSX.utils.json_to_sheet(expensesData);
-    XLSX.utils.book_append_sheet(workbook, expensesSheet, 'Expenses');
+    // Add headers
+    const headers = Object.keys(expensesData[0] || {});
+    expensesSheet.addRow(headers);
+    
+    // Add data
+    expensesData.forEach(row => {
+      expensesSheet.addRow(Object.values(row));
+    });
     
     // Summary sheet
     const summaryData = this.generateSummaryData(expenses, config);
-    const summarySheet = XLSX.utils.json_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+    const summarySheet = workbook.addWorksheet('Summary');
+    const summaryHeaders = Object.keys(summaryData[0] || {});
+    summarySheet.addRow(summaryHeaders);
+    summaryData.forEach(row => {
+      summarySheet.addRow(Object.values(row));
+    });
     
     // Category breakdown sheet
     const categoryData = this.generateCategoryBreakdown(expenses);
-    const categorySheet = XLSX.utils.json_to_sheet(categoryData);
-    XLSX.utils.book_append_sheet(workbook, categorySheet, 'Categories');
+    const categorySheet = workbook.addWorksheet('Categories');
+    const categoryHeaders = Object.keys(categoryData[0] || {});
+    categorySheet.addRow(categoryHeaders);
+    categoryData.forEach(row => {
+      categorySheet.addRow(Object.values(row));
+    });
     
     // Monthly projections sheet
     const monthlyData = this.generateMonthlyProjections(expenses);
-    const monthlySheet = XLSX.utils.json_to_sheet(monthlyData);
-    XLSX.utils.book_append_sheet(workbook, monthlySheet, 'Monthly Projections');
+    const monthlySheet = workbook.addWorksheet('Monthly Projections');
+    const monthlyHeaders = Object.keys(monthlyData[0] || {});
+    monthlySheet.addRow(monthlyHeaders);
+    monthlyData.forEach(row => {
+      monthlySheet.addRow(Object.values(row));
+    });
     
     // Convert to blob
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const buffer = await workbook.xlsx.writeBuffer();
+    return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   }
 
   private async exportToCSV(expenses: Expense[], options: ExportOptions): Promise<Blob> {
@@ -448,12 +467,20 @@ export class ExportService {
       ];
       
       if (format === 'xlsx') {
-        const workbook = XLSX.utils.book_new();
-        const sheet = XLSX.utils.json_to_sheet(templateData);
-        XLSX.utils.book_append_sheet(workbook, sheet, 'Template');
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Template');
         
-        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-        fileData = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        // Add headers
+        const headers = Object.keys(templateData[0] || {});
+        sheet.addRow(headers);
+        
+        // Add data
+        templateData.forEach(row => {
+          sheet.addRow(Object.values(row));
+        });
+        
+        const buffer = await workbook.xlsx.writeBuffer();
+        fileData = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       } else {
         const csvContent = this.convertToCSV(templateData);
         fileData = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

@@ -25,12 +25,6 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
     needsMigration: boolean;
   } | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      checkMigrationStatus();
-    }
-  }, [isOpen]);
-
   const checkMigrationStatus = async () => {
     try {
       const status = await storageMigrationService.getMigrationStatus();
@@ -44,6 +38,12 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
       });
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      checkMigrationStatus();
+    }
+  }, [isOpen]);
 
   const handleMigration = async () => {
     setIsMigrating(true);

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAppStore } from '../../lib/store';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+import { ImportMappingComponent } from './ImportMapping';
 
 interface ImportedExpense {
   name: string;
@@ -24,6 +25,7 @@ export const ImportWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedExpense[]>([]);
+  const [rawImportData, setRawImportData] = useState<any[]>([]);
   const [selectedExpenses, setSelectedExpenses] = useState<Set<number>>(new Set());
   const [importResults, setImportResults] = useState<{ success: number; errors: string[] }>({ success: 0, errors: [] });
   const [isProcessing, setIsProcessing] = useState(false);
@@ -60,39 +62,53 @@ export const ImportWizard: React.FC = () => {
     }
   };
 
-  const parseFile = (uploadedFile: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        if (typeof data === 'string') {
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          
-          const expenses: ImportedExpense[] = jsonData.map((row: any) => ({
-            name: row.Name || row.name || 'Unknown',
-            amount: parseFloat(row.Amount || row.amount || 0),
-            currency: row.Currency || row.currency || 'USD',
-            frequency: row.Frequency || row.frequency,
-            category: row.Category ? [row.Category] : [],
-            notes: row.Notes || row.notes || '',
-            detectedRecurring: row.Name?.toLowerCase().includes('subscription') || 
-                             row.name?.toLowerCase().includes('subscription') ||
-                             row.Description?.toLowerCase().includes('monthly'),
-            confidence: 0.8,
-          }));
-          
-          setImportedData(expenses);
-          setCurrentStep(1);
-        }
-      } catch (error) {
-        console.error('Error parsing file:', error);
-        setImportResults({ success: 0, errors: ['Failed to parse file'] });
+  const parseFile = async (uploadedFile: File) => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(await uploadedFile.arrayBuffer());
+      
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) {
+        throw new Error('No worksheet found in file');
       }
-    };
-    reader.readAsBinaryString(uploadedFile);
+      
+      const jsonData: any[] = [];
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // Skip header row
+        const rowData: any = {};
+        row.eachCell((cell, colNumber) => {
+          const header = worksheet.getRow(1).getCell(colNumber).value as string;
+          if (header) {
+            rowData[header] = cell.value;
+          }
+        });
+        if (Object.keys(rowData).length > 0) {
+          jsonData.push(rowData);
+        }
+      });
+      
+      // Store raw data for mapping
+      setRawImportData(jsonData);
+      
+      const expenses: ImportedExpense[] = jsonData.map((row: any) => ({
+        name: row.Name || row.name || 'Unknown',
+        amount: parseFloat(row.Amount || row.amount || 0),
+        currency: row.Currency || row.currency || 'USD',
+        frequency: row.Frequency || row.frequency,
+        category: row.Category ? [row.Category] : [],
+        notes: row.Notes || row.notes || '',
+        detectedRecurring: row.Name?.toLowerCase().includes('subscription') || 
+                         row.name?.toLowerCase().includes('subscription') ||
+                         row.Description?.toLowerCase().includes('monthly'),
+        confidence: 0.8,
+      }));
+      
+      setImportedData(expenses);
+      setCurrentStep(1);
+    } catch (error) {
+      console.error('Error parsing file:', error);
+      setImportResults({ success: 0, errors: ['Failed to parse file'] });
+    }
   };
 
   const toggleExpenseSelection = (index: number) => {
@@ -266,17 +282,13 @@ export const ImportWizard: React.FC = () => {
         
       case 2:
         return (
-          <div>
-            <h2 className="text-2xl font-bold text-primary mb-6">Map Your Fields</h2>
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <p className="text-gray-600 mb-4">
-                Field mapping allows you to match your file columns to the correct expense fields.
-              </p>
-              <div className="text-sm text-gray-500">
-                Field mapping feature coming soon...
-              </div>
-            </div>
-          </div>
+          <ImportMappingComponent
+            importData={rawImportData}
+            onMappingComplete={() => {
+              setCurrentStep(3);
+            }}
+            onBack={() => setCurrentStep(1)}
+          />
         );
         
       case 3:

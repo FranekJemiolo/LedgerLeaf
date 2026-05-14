@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../lib/store';
 import { notificationService } from '../../lib/notifications';
 import { exportService } from '../../lib/export-service';
+import { fileSystemAccessService } from '../../lib/filesystem';
 import type { ExportOptions } from '../../lib/export-service';
 
 interface AppSettings {
@@ -142,6 +143,38 @@ export const Settings: React.FC = () => {
     }
   };
 
+  const handleSelectDataDirectory = async () => {
+    try {
+      const granted = await fileSystemAccessService.requestDirectoryAccess();
+      if (granted) {
+        setSaveMessage({ type: 'success', message: 'Data directory selected successfully!' });
+      } else {
+        setSaveMessage({ type: 'error', message: 'Directory selection cancelled' });
+      }
+    } catch (error) {
+      console.error('Failed to select data directory:', error);
+      setSaveMessage({ type: 'error', message: 'Failed to select data directory' });
+    }
+  };
+
+  const handleThemeChange = (theme: 'light' | 'dark' | 'system') => {
+    setSettings(prev => ({ ...prev, theme }));
+    
+    // Apply theme to document
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      // System theme
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  };
+
   const requestNotificationPermission = async () => {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission();
@@ -247,8 +280,57 @@ export const Settings: React.FC = () => {
               Days of inactivity before sending usage reminders
             </p>
           </div>
+
+          <div>
+            <label className="block font-body-sm text-body-sm text-on-surface-variant mb-2">
+              Theme
+            </label>
+            <select
+              value={settings.theme}
+              onChange={(e) => handleThemeChange(e.target.value as any)}
+              className="w-full px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:outline-none"
+            >
+              <option value="system">System Default</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+            <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Choose your preferred color scheme
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Data Directory Section */}
+      {fileSystemAccessService.supported && (
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">
+          <div className="flex items-center mb-4">
+            <span className="material-symbols-outlined text-primary mr-2">folder</span>
+            <h3 className="font-headline-md text-headline-md text-primary">Data Directory</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-body-base text-body-base text-primary">Current Storage</p>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  {config?.app_data_directory || 'localStorage'}
+                </p>
+              </div>
+              <button
+                onClick={handleSelectDataDirectory}
+                className="flex items-center px-3 py-1 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps hover:opacity-90"
+              >
+                <span className="material-symbols-outlined">folder_open</span>
+                Change Directory
+              </button>
+            </div>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              Select a local directory to store your expense data as YAML files. This enables full offline access and data portability.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Notification Settings Section */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6">

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Expense } from '../../types';
 import { useAppStore } from '../../lib/store';
 import { storageService } from '../../storage';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 interface ExportOptions {
   format: 'csv' | 'xlsx';
@@ -131,13 +131,21 @@ export const ExportSystem: React.FC = () => {
     downloadFile(csvContent, filename, 'text/csv');
   };
 
-  const exportToXLSX = (data: any[], filename: string): void => {
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Expenses');
+  const exportToXLSX = async (data: any[], filename: string): Promise<void> => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Expenses');
     
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    downloadFile(excelBuffer, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    // Add headers
+    const headers = Object.keys(data[0] || {});
+    sheet.addRow(headers);
+    
+    // Add data
+    data.forEach(row => {
+      sheet.addRow(Object.values(row));
+    });
+    
+    const buffer = await workbook.xlsx.writeBuffer();
+    downloadFile(buffer, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   };
 
   const downloadFile = (content: any, filename: string, mimeType: string): void => {

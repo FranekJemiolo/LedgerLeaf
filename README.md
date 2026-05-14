@@ -13,6 +13,23 @@ A fully local-first recurring expenses and obligations management application bu
 - **Import/Export**: Support for CSV and Excel spreadsheet formats
 - **Usage Tracking**: Identify potentially unused subscriptions
 
+## Screenshots
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Inventory
+![Inventory](screenshots/inventory.png)
+
+### Calendar
+![Calendar](screenshots/calendar.png)
+
+### Import Wizard
+![Import Wizard](screenshots/import-wizard.png)
+
+### Settings
+![Settings](screenshots/settings.png)
+
 ## Architecture
 
 ### Tech Stack

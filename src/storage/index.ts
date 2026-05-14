@@ -3,6 +3,7 @@ import { Expense, ExpenseSchema, Config, ConfigSchema } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { fileSystemAccessService } from '../lib/filesystem';
 import { filesystemStorageService } from './filesystem-storage';
+import { indexedDBStorageService } from './indexeddb-storage';
 
 export class StorageService {
   private readonly STORAGE_KEYS = {
@@ -22,8 +23,12 @@ export class StorageService {
         // Use filesystem storage
         await filesystemStorageService.initialize();
         console.log('Using filesystem storage');
+      } else if (typeof indexedDB !== 'undefined') {
+        // Fall back to IndexedDB for mobile browsers
+        await indexedDBStorageService.initialize();
+        console.log('Using IndexedDB storage');
       } else {
-        // Fall back to localStorage
+        // Fall back to localStorage as last resort
         await this.initializeConfig();
         console.log('Using localStorage storage');
       }
@@ -70,6 +75,11 @@ export class StorageService {
         return await filesystemStorageService.loadConfig();
       }
 
+      // Fall back to IndexedDB
+      if (typeof indexedDB !== 'undefined') {
+        return await indexedDBStorageService.loadConfig();
+      }
+
       // Fall back to localStorage
       const configData = localStorage.getItem(this.STORAGE_KEYS.CONFIG);
       if (!configData) {
@@ -101,6 +111,8 @@ export class StorageService {
 
       if (hasFilesystemAccess) {
         await filesystemStorageService.saveConfig(validatedConfig);
+      } else if (typeof indexedDB !== 'undefined') {
+        await indexedDBStorageService.saveConfig(validatedConfig);
       } else {
         localStorage.setItem(this.STORAGE_KEYS.CONFIG, yamlContent);
       }
@@ -118,6 +130,11 @@ export class StorageService {
 
       if (hasFilesystemAccess) {
         return await filesystemStorageService.loadAllExpenses();
+      }
+
+      // Fall back to IndexedDB
+      if (typeof indexedDB !== 'undefined') {
+        return await indexedDBStorageService.loadAllExpenses();
       }
 
       // Fall back to localStorage
@@ -154,6 +171,8 @@ export class StorageService {
 
       if (hasFilesystemAccess) {
         await filesystemStorageService.saveExpense(expense);
+      } else if (typeof indexedDB !== 'undefined') {
+        await indexedDBStorageService.saveExpense(expense);
       } else {
         const expenses = await this.loadAllExpenses();
         const updatedExpense = {
@@ -192,6 +211,11 @@ export class StorageService {
         return await filesystemStorageService.createExpense(expenseData);
       }
 
+      // Fall back to IndexedDB
+      if (typeof indexedDB !== 'undefined') {
+        return await indexedDBStorageService.createExpense(expenseData);
+      }
+
       // Fall back to localStorage
       const id = uuidv4();
       const now = new Date().toISOString();
@@ -221,6 +245,8 @@ export class StorageService {
 
       if (hasFilesystemAccess) {
         await filesystemStorageService.deleteExpense(id);
+      } else if (typeof indexedDB !== 'undefined') {
+        await indexedDBStorageService.deleteExpense(id);
       } else {
         const expenses = await this.loadAllExpenses();
         const filteredExpenses = expenses.filter(e => e.id !== id);
@@ -332,6 +358,10 @@ export class StorageService {
         return await filesystemStorageService.getAppDataDirectory();
       }
 
+      if (typeof indexedDB !== 'undefined') {
+        return await indexedDBStorageService.getAppDataDirectory();
+      }
+
       return this.STORAGE_KEYS.CONFIG;
   }
 
@@ -341,7 +371,9 @@ export class StorageService {
                                    await fileSystemAccessService.verifyDirectoryAccess();
 
       if (hasFilesystemAccess) {
-        await filesystemStorageService.setAppDataDirectory(directory);
+        await filesystemStorageService.setAppDataDirectory();
+      } else if (typeof indexedDB !== 'undefined') {
+        await indexedDBStorageService.setAppDataDirectory(directory);
       } else {
         // For localStorage, this is just a reference
         console.log('App data directory set to:', directory);

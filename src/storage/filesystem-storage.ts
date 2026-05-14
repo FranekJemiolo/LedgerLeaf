@@ -7,6 +7,10 @@ export class FilesystemStorageService {
   private readonly EXPENSES_DIR = 'expenses';
   private readonly EXPORTS_DIR = 'exports';
   private readonly CONFIG_FILE = 'config.yml';
+  private fileCache: Map<string, { content: string; lastModified: number }> = new Map();
+  private pollingInterval: NodeJS.Timeout | null = null;
+  private readonly POLLING_INTERVAL_MS = 5000; // Check every 5 seconds
+  private changeCallbacks: Set<() => void> = new Set();
 
   async initialize(): Promise<void> {
     try {
@@ -27,6 +31,9 @@ export class FilesystemStorageService {
       
       // Initialize config if it doesn't exist
       await this.initializeConfig();
+      
+      // Start file watching
+      this.startFileWatching();
     } catch (error) {
       console.error('Failed to initialize filesystem storage:', error);
       throw error;
@@ -278,7 +285,7 @@ export class FilesystemStorageService {
     return fileSystemAccessService.getDirectoryPath() || 'filesystem';
   }
 
-  async setAppDataDirectory(_directory: string): Promise<void> {
+  async setAppDataDirectory(): Promise<void> {
     // This is handled by File System Access API directory picker
     // This method is kept for compatibility with existing interface
     console.log('App data directory set through File System Access API');
@@ -332,6 +339,90 @@ export class FilesystemStorageService {
 
   private getExpenseFilename(id: string): string {
     return `${id}.yml`;
+  }
+
+  private startFileWatching(): void {
+    if (this.pollingInterval) {
+      return; // Already watching
+    }
+
+    this.pollingInterval = setInterval(async () => {
+      await this.checkForChanges();
+    }, this.POLLING_INTERVAL_MS);
+
+    console.log('File watching started');
+  }
+
+  private stopFileWatching(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+      console.log('File watching stopped');
+    }
+  }
+
+  private async checkForChanges(): Promise<void> {
+    try {
+      const expenseFiles = await fileSystemAccessService.listFiles(this.EXPENSES_DIR);
+      let hasChanges = false;
+
+      for (const filename of expenseFiles) {
+        if (filename.endsWith('.yml') || filename.endsWith('.yaml')) {
+          const filepath = `${this.EXPENSES_DIR}/${filename}`;
+          const currentContent = await fileSystemAccessService.readFile(filepath);
+          const cached = this.fileCache.get(filepath);
+
+          if (!cached || cached.content !== currentContent) {
+            // File has changed or is new
+            this.fileCache.set(filepath, {
+              content: currentContent,
+              lastModified: Date.now()
+            });
+            hasChanges = true;
+          }
+        }
+      }
+
+      // Check for deleted files
+      const cachedFiles = Array.from(this.fileCache.keys());
+      for (const cachedFile of cachedFiles) {
+        if (!expenseFiles.some(f => cachedFile.endsWith(f))) {
+          this.fileCache.delete(cachedFile);
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges) {
+        this.notifyChangeCallbacks();
+      }
+    } catch (error) {
+      console.error('Error checking for file changes:', error);
+    }
+  }
+
+  private notifyChangeCallbacks(): void {
+    this.changeCallbacks.forEach(callback => {
+      try {
+        callback();
+      } catch (error) {
+        console.error('Error in change callback:', error);
+      }
+    });
+  }
+
+  public onFileChange(callback: () => void): () => void {
+    this.changeCallbacks.add(callback);
+
+    // Return unsubscribe function
+    return () => {
+      this.changeCallbacks.delete(callback);
+    };
+  }
+
+  public async destroy(): Promise<void> {
+    this.stopFileWatching();
+    this.fileCache.clear();
+    this.changeCallbacks.clear();
   }
 }
 

@@ -24,6 +24,7 @@ export interface ImportMappingResult {
     field: string;
     suggestedColumn: string;
     reason: string;
+    confidence: number;
   }[];
 }
 
@@ -307,17 +308,20 @@ export class ImportMappingService {
       case 'currency':
         return /^[A-Z]{3}$/.test(stringValue);
       
-      case 'type':
+      case 'type': {
         const validTypes = ['subscription', 'service', 'obligation', 'utility', 'insurance', 'other'];
         return validTypes.includes(stringValue);
+      }
       
-      case 'status':
+      case 'status': {
         const validStatuses = ['active', 'inactive', 'cancelled', 'paused'];
         return validStatuses.includes(stringValue);
+      }
       
-      case 'frequency':
+      case 'frequency': {
         const validFrequencies = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
         return validFrequencies.includes(stringValue);
+      }
       
       case 'category':
         return stringValue.length > 0;
@@ -398,9 +402,10 @@ export class ImportMappingService {
     const stringValue = String(value).trim();
     
     switch (field) {
-      case 'amount':
+      case 'amount': {
         const numericValue = parseFloat(stringValue.replace(/[^0-9.]/g, ''));
         return isNaN(numericValue) ? 0 : numericValue;
+      }
       
       case 'type':
       case 'status':
@@ -411,9 +416,10 @@ export class ImportMappingService {
       case 'tags':
         return stringValue.split(',').map((tag: string) => tag.trim()).filter(tag => tag.length > 0);
       
-      case 'due_day':
+      case 'due_day': {
         const dayValue = parseInt(stringValue);
         return isNaN(dayValue) ? null : Math.min(Math.max(dayValue, 1), 31);
+      }
       
       default:
         return stringValue;
@@ -461,7 +467,7 @@ export class ImportMappingService {
         due_day: row.due_day || 1
       },
       category: Array.isArray(row.category) ? row.category : (row.category ? [row.category] : []),
-      tags: Array.isArray(row.tags) ? row.tags : (row.tags ? row.tags.split(',').map(t => t.trim()) : []),
+      tags: Array.isArray(row.tags) ? row.tags : (row.tags ? String(row.tags).split(',').map((t: string) => t.trim()) : []),
       notes: row.notes
     };
   }

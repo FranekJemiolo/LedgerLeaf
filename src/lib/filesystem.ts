@@ -17,6 +17,7 @@ export interface DirectoryHandle {
   resolve(possibleDescendant?: FileSystemHandle): Promise<[string] | null>;
 }
 
+/* eslint-disable no-undef */
 export interface FileSystemWritableFileStream extends WritableStream {
   seek(position: number): Promise<void>;
   truncate(size: number): Promise<void>;
@@ -70,7 +71,8 @@ export class FileSystemAccessService {
       // Try to resolve the directory to verify we still have access
       await this.directoryHandle.resolve();
       return true;
-    } catch (error) {
+    } catch {
+      // Error is intentionally ignored - we just need to know if access failed
       this.directoryHandle = null;
       return false;
     }
@@ -147,7 +149,8 @@ export class FileSystemAccessService {
     try {
       await this.getFileHandle(path);
       return true;
-    } catch (error) {
+    } catch {
+      // Error is intentionally ignored - we just need to know if file exists
       return false;
     }
   }
