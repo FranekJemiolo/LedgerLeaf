@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/common"
 
 # Run type checking first
 echo "🔍 Running TypeScript type check..."
