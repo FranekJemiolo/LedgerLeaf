@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('App Screenshots', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('/');
   });
 
   test('capture main dashboard', async ({ page }) => {

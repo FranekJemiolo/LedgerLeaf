@@ -99,7 +99,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
             className="bg-primary text-on-primary px-4 py-2 rounded flex items-center gap-2 font-label-caps text-label-caps uppercase"
           >
             <span className="material-symbols-outlined">add</span>
-            Add
+            Add Expense
           </button>
         </div>
         

@@ -92,50 +92,61 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Monthly Summary Card */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2 bg-surface-container-lowest border border-outline-variant p-5 flex flex-col justify-between h-full">
+      {/* Monthly Summary Card & Optimization Score */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="md:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 flex flex-col justify-between shadow-sm card-hover">
           <div>
-            <h3 className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Monthly Estimated Recurring</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-label-caps text-label-caps text-slate-500 uppercase tracking-wider">Monthly Estimated Recurring</h3>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                +4% vs last month
+              </span>
+            </div>
             <div className="flex items-baseline gap-2">
-              <span className="font-display-sm text-display-sm text-primary">
+              <span className="text-3xl font-bold text-slate-900 tracking-tight">
                 {formatCurrency(dashboardStats.totalMonthlyRecurring)}
               </span>
-              <span className="text-on-surface-variant font-body-sm text-body-sm">+4% vs last month</span>
             </div>
           </div>
-          <div className="mt-6 space-y-3">
-            <div className="flex items-center justify-between text-body-sm font-body-sm">
-              <span>Utilities</span>
-              <span className="font-data-tabular text-data-tabular">
-                {formatCurrency(dashboardStats.categoryBreakdown['Utilities'] || 0)}
-              </span>
+          <div className="mt-6 space-y-4">
+            <div>
+              <div className="flex items-center justify-between text-sm text-slate-600 mb-1.5 font-medium">
+                <span>Utilities</span>
+                <span className="font-semibold text-slate-900">
+                  {formatCurrency(dashboardStats.categoryBreakdown['Utilities'] || 0)}
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div className="bg-indigo-600 h-full w-[34%] rounded-full"></div>
+              </div>
             </div>
-            <div className="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
-              <div className="bg-primary h-full w-[34%]"></div>
-            </div>
-            <div className="flex items-center justify-between text-body-sm font-body-sm">
-              <span>Subscriptions</span>
-              <span className="font-data-tabular text-data-tabular">
-                {formatCurrency(dashboardStats.categoryBreakdown['Subscriptions'] || 0)}
-              </span>
-            </div>
-            <div className="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
-              <div className="bg-secondary h-full w-[15%]"></div>
+            <div>
+              <div className="flex items-center justify-between text-sm text-slate-600 mb-1.5 font-medium">
+                <span>Subscriptions</span>
+                <span className="font-semibold text-slate-900">
+                  {formatCurrency(dashboardStats.categoryBreakdown['Subscriptions'] || 0)}
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div className="bg-emerald-500 h-full w-[15%] rounded-full"></div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="bg-primary-container text-on-primary-container p-5 flex flex-col justify-between">
-          <h3 className="font-label-caps text-label-caps opacity-80 uppercase">Optimization Score</h3>
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 flex flex-col justify-between shadow-sm border border-slate-700/50 card-hover">
+          <div className="flex items-center justify-between">
+            <h3 className="font-label-caps text-label-caps text-slate-400 uppercase tracking-wider">Optimization Score</h3>
+            <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-medium">Good</span>
+          </div>
           <div className="flex items-center justify-center py-4">
-            <div className="relative w-24 h-24 flex items-center justify-center border-4 border-on-primary-container/20 rounded-full">
-              <span className="font-display-sm text-display-sm text-on-primary">82</span>
-              <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
-                <circle className="text-on-primary-container" cx="50" cy="50" fill="none" r="48" stroke="currentColor" strokeDasharray="250 300" strokeWidth="4"></circle>
+            <div className="relative w-28 h-28 flex items-center justify-center border-4 border-slate-700 rounded-full">
+              <span className="text-3xl font-extrabold text-white">82</span>
+              <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                <circle className="text-emerald-400" cx="50" cy="50" fill="none" r="48" stroke="currentColor" strokeDasharray="250 300" strokeWidth="4"></circle>
               </svg>
             </div>
           </div>
-          <p className="text-body-sm font-body-sm opacity-90 text-center">Saving $12/mo could improve your score.</p>
+          <p className="text-xs text-slate-300 text-center font-medium">Saving $12/mo could improve your score to 90.</p>
         </div>
       </section>
 
@@ -201,15 +212,20 @@ export const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* Decorative Aesthetic Image */}
-      <div className="rounded-xl overflow-hidden h-40 w-full relative group">
-        <img 
-          alt="Financial overview" 
-          className="w-full h-full object-cover grayscale opacity-80" 
-          src="https://via.placeholder.com/400x200/f7f9fb/1d2b3e?text=Financial+Overview"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent flex items-end p-4">
-          <p className="text-white font-label-caps text-label-caps">Financial Clarity Achieved.</p>
+      {/* Local-first privacy reassurance banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-6 shadow-md border border-slate-700/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <span className="material-symbols-outlined text-2xl">shield</span>
+          </div>
+          <div>
+            <h4 className="font-semibold text-lg text-white">100% Local-First & Private</h4>
+            <p className="text-slate-300 text-sm">All obligations are stored on your device in human-readable YAML format.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 bg-white/10 rounded-full border border-white/10 text-slate-200">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Offline Ready
         </div>
       </div>
     </div>

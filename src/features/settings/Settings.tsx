@@ -235,6 +235,7 @@ export const Settings: React.FC = () => {
               Default Currency
             </label>
             <select
+              name="currency"
               value={settings.currency}
               onChange={(e) => setSettings(prev => ({ ...prev, currency: e.target.value }))}
               className="w-full px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:border-primary focus:outline-none"

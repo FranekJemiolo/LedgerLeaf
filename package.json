@@ -31,21 +31,22 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
-    "js-yaml": "^4.1.1",
+    "js-yaml": "^4.3.2",
     "lucide-react": "^1.14.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.6.0",
     "uuid": "^14.0.0",
-    "exceljs": "^4.4.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@playwright/test": "^1.60.0",
-    "@types/node": "^25.7.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^25.8.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@typescript-eslint/eslint-plugin": "^8.59.3",
@@ -57,10 +58,21 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.4",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.28",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.3.0",
     "typescript": "~5.8.3",
-    "vite": "^7.0.4"
+    "vite": "^7.3.6"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    },
+    "brace-expansion": "^2.1.4",
+    "nanoid": "^3.3.18",
+    "tmp": "^0.2.7",
+    "browserslist": "^4.28.8",
+    "@babel/core": "^7.29.7",
+    "esbuild": "^0.28.2"
   }
 }

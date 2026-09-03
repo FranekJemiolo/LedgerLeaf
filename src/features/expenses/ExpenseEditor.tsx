@@ -47,6 +47,8 @@ export const ExpenseEditor: React.FC<ExpenseEditorProps> = ({
         cost: { amount: 0, currency: 'USD' },
         billing: { frequency: 'monthly', interval: 1 },
         category: [],
+        reminders: { enabled: true, days_before: 3 },
+        usage_tracking: { enabled: true, remind_after_days_unused: 45 },
         tags: [],
         metadata: {
           created_at: new Date().toISOString(),
@@ -201,6 +203,7 @@ export const ExpenseEditor: React.FC<ExpenseEditorProps> = ({
                   Type
                 </label>
                 <select
+                  name="type"
                   value={formData.type || 'other'}
                   onChange={(e) => handleInputChange('type', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -260,10 +263,10 @@ export const ExpenseEditor: React.FC<ExpenseEditorProps> = ({
                 <input
                   type="number"
                   step="0.01"
+                  placeholder="amount"
                   value={formData.cost?.amount || ''}
                   onChange={(e) => handleCostChange('amount', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="0.00"
                 />
               </div>
               
@@ -272,6 +275,7 @@ export const ExpenseEditor: React.FC<ExpenseEditorProps> = ({
                   Currency
                 </label>
                 <select
+                  name="currency"
                   value={formData.cost?.currency || 'USD'}
                   onChange={(e) => handleCostChange('currency', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -299,6 +303,7 @@ export const ExpenseEditor: React.FC<ExpenseEditorProps> = ({
                   Frequency
                 </label>
                 <select
+                  name="frequency"
                   value={formData.billing?.frequency || 'monthly'}
                   onChange={(e) => handleBillingChange('frequency', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -332,10 +337,10 @@ export const ExpenseEditor: React.FC<ExpenseEditorProps> = ({
                   type="number"
                   min="1"
                   max="31"
+                  placeholder="due day"
                   value={formData.billing?.due_day || ''}
                   onChange={(e) => handleBillingChange('due_day', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="15"
                 />
               </div>
             </div>
@@ -532,7 +537,7 @@ export const ExpenseEditor: React.FC<ExpenseEditorProps> = ({
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               <Save className="h-4 w-4" />
-              {expense ? 'Update' : 'Create'}
+              Save
             </button>
           </div>
         </div>

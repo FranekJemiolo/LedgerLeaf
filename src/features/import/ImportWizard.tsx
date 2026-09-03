@@ -21,7 +21,7 @@ interface ImportStep {
 }
 
 export const ImportWizard: React.FC = () => {
-  useAppStore();
+  const { addExpense } = useAppStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [, setFile] = useState<File | null>(null);
   const [importedData, setImportedData] = useState<ImportedExpense[]>([]);
@@ -29,6 +29,7 @@ export const ImportWizard: React.FC = () => {
   const [selectedExpenses, setSelectedExpenses] = useState<Set<number>>(new Set());
   const [importResults, setImportResults] = useState<{ success: number; errors: string[] }>({ success: 0, errors: [] });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isImportCompleted, setIsImportCompleted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const steps: ImportStep[] = [
@@ -94,12 +95,12 @@ export const ImportWizard: React.FC = () => {
         name: row.Name || row.name || 'Unknown',
         amount: parseFloat(row.Amount || row.amount || 0),
         currency: row.Currency || row.currency || 'USD',
-        frequency: row.Frequency || row.frequency,
+        frequency: row.Frequency || row.frequency || 'monthly',
         category: row.Category ? [row.Category] : [],
         notes: row.Notes || row.notes || '',
         detectedRecurring: row.Name?.toLowerCase().includes('subscription') || 
-                         row.name?.toLowerCase().includes('subscription') ||
-                         row.Description?.toLowerCase().includes('monthly'),
+                          row.name?.toLowerCase().includes('subscription') ||
+                          row.Description?.toLowerCase().includes('monthly'),
         confidence: 0.8,
       }));
       
@@ -131,11 +132,49 @@ export const ImportWizard: React.FC = () => {
 
   const handleImport = async () => {
     setIsProcessing(true);
-    const results = { success: 0, errors: [] };
+    const results: { success: number; errors: string[] } = { success: 0, errors: [] };
     
     try {
-      results.success = selectedExpenses.size;
+      let count = 0;
+      const errors: string[] = [];
+      for (const index of selectedExpenses) {
+        const item = importedData[index];
+        if (!item) continue;
+        try {
+          await addExpense({
+            name: item.name,
+            type: 'subscription',
+            status: 'active',
+            cost: {
+              amount: item.amount || 0,
+              currency: item.currency || 'USD',
+            },
+            billing: {
+              frequency: (item.frequency as any) || 'monthly',
+              interval: 1,
+              due_day: 1,
+            },
+            category: item.category || [],
+            reminders: {
+              enabled: true,
+              days_before: 3,
+            },
+            usage_tracking: {
+              enabled: true,
+              remind_after_days_unused: 45,
+            },
+            notes: item.notes || 'Imported via Import Wizard',
+            tags: ['imported'],
+          });
+          count++;
+        } catch (err: any) {
+          errors.push(`Failed to import ${item.name}: ${err?.message || 'Unknown error'}`);
+        }
+      }
+      results.success = count;
+      results.errors = errors;
       setImportResults(results);
+      setIsImportCompleted(true);
     } finally {
       setIsProcessing(false);
     }
@@ -147,6 +186,7 @@ export const ImportWizard: React.FC = () => {
     setImportedData([]);
     setSelectedExpenses(new Set());
     setImportResults({ success: 0, errors: [] });
+    setIsImportCompleted(false);
   };
 
   const renderStep = () => {
@@ -292,6 +332,36 @@ export const ImportWizard: React.FC = () => {
         );
         
       case 3:
+        if (isImportCompleted) {
+          return (
+            <div>
+              <h2 className="text-2xl font-bold text-primary mb-6">Complete Import</h2>
+              <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-slate-200">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="material-symbols-outlined text-3xl">check_circle</span>
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">Import Successful!</h3>
+                <p className="text-slate-600 mb-6">{importResults.success} expenses have been imported</p>
+                {importResults.errors.length > 0 && (
+                  <div className="text-left bg-amber-50 text-amber-800 p-4 rounded-lg mb-6 text-sm">
+                    <p className="font-semibold mb-1">Warnings:</p>
+                    <ul className="list-disc list-inside">
+                      {importResults.errors.map((err, idx) => (
+                        <li key={idx}>{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <button
+                  onClick={resetWizard}
+                  className="bg-primary text-white px-6 py-2.5 rounded-lg hover:opacity-90 font-medium"
+                >
+                  Import More Files
+                </button>
+              </div>
+            </div>
+          );
+        }
         return (
           <div>
             <h2 className="text-2xl font-bold text-primary mb-6">Complete Import</h2>

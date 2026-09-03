@@ -1,5 +1,18 @@
-import React, { useState } from 'react';
-import { format, addDays, addMonths, subMonths, isSameDay, differenceInDays } from 'date-fns';
+import React, { useState, useMemo, useCallback } from 'react';
+import {
+  format,
+  addDays,
+  addMonths,
+  subMonths,
+  isSameDay,
+  differenceInDays,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+} from 'date-fns';
 import { Expense } from '../../types';
 import { useAppStore } from '../../lib/store';
 
@@ -13,10 +26,8 @@ export const Calendar: React.FC = () => {
   const { expenses } = useAppStore();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [calendarDays] = useState<CalendarDay[]>([]);
 
   const calculateNextDueDate = (expense: Expense, referenceDate: Date): Date | null => {
-    
     if (expense.billing.due_day) {
       let nextDue = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), expense.billing.due_day);
       
@@ -48,14 +59,43 @@ export const Calendar: React.FC = () => {
     return null;
   };
 
-  const getExpensesForDate = (date: Date): Expense[] => {
+  const getExpensesForDate = useCallback((date: Date): Expense[] => {
     return expenses.filter(expense => {
       if (expense.status !== 'active') return false;
+      const dueDay = expense.billing.due_day;
+      if (!dueDay) return false;
 
-      const nextDue = calculateNextDueDate(expense, date);
-      return nextDue && isSameDay(nextDue, date);
+      switch (expense.billing.frequency) {
+        case 'daily':
+          return true;
+        case 'weekly':
+          return (dueDay % 7) === date.getDay();
+        case 'monthly':
+          return dueDay === date.getDate();
+        case 'yearly':
+          return dueDay === date.getDate();
+        case 'quarterly':
+          return dueDay === date.getDate() && (date.getMonth() % 3 === 0);
+        default:
+          return dueDay === date.getDate();
+      }
     });
-  };
+  }, [expenses]);
+
+  const calendarDays = useMemo<CalendarDay[]>(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(monthStart);
+    const startDate = startOfWeek(monthStart);
+    const endDate = endOfWeek(monthEnd);
+
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+    return days.map(date => ({
+      date,
+      isCurrentMonth: isSameMonth(date, monthStart),
+      expenses: getExpensesForDate(date),
+    }));
+  }, [currentMonth, getExpensesForDate]);
 
   
   const formatCurrency = (amount: number, currency: string = 'USD') => {

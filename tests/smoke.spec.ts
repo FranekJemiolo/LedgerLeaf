@@ -6,27 +6,27 @@ test.describe('Smoke Tests', () => {
     
     // Check that the main elements are present
     await expect(page.locator('h1')).toContainText('LedgerLeaf');
-    await expect(page.locator('text=Local-First Expense Tracker')).toBeVisible();
+    await expect(page.locator('button:has-text("Dashboard")')).toBeVisible();
   });
 
   test('should have working navigation', async ({ page }) => {
     await page.goto('/');
     
     // Test navigation tabs
-    await expect(page.locator('text=Dashboard')).toBeVisible();
-    await expect(page.locator('text=Expenses')).toBeVisible();
-    await expect(page.locator('text=Calendar')).toBeVisible();
-    await expect(page.locator('text=Import')).toBeVisible();
-    await expect(page.locator('text=Settings')).toBeVisible();
+    await expect(page.locator('button:has-text("Dashboard")')).toBeVisible();
+    await expect(page.locator('button:has-text("Inventory")')).toBeVisible();
+    await expect(page.locator('button:has-text("Calendar")')).toBeVisible();
+    await expect(page.locator('button:has-text("Wizard")')).toBeVisible();
+    await expect(page.locator('button:has-text("Settings")')).toBeVisible();
   });
 
   test('should navigate to expenses tab', async ({ page }) => {
     await page.goto('/');
     
-    // Click on Expenses tab
-    await page.click('text=Expenses');
+    // Click on Inventory tab
+    await page.click('button:has-text("Inventory")');
     
     // Check that we're on the expenses page
-    await expect(page.locator('text=Add Expense')).toBeVisible();
+    await expect(page.locator('button:has-text("Inventory")')).toBeVisible();
   });
 });

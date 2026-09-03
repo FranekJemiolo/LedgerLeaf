@@ -18,6 +18,15 @@ function App() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | undefined>();
   const [showEditor, setShowEditor] = useState(false);
   const [showMigrationModal, setShowMigrationModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     initializeApp();
@@ -48,6 +57,7 @@ function App() {
 
   const handleExpenseCreate = () => {
     setSelectedExpense(undefined);
+    setShowEditor(true);
   };
 
   const handleEditorClose = () => {
@@ -95,23 +105,59 @@ function App() {
   }
 
   return (
-    <div className="bg-background text-on-surface font-body-base min-h-screen pb-20">
+    <div className="bg-slate-50 text-slate-900 min-h-screen">
       {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-surface border-b border-outline-variant flex items-center justify-between px-container-padding h-touch-target">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary">account_balance_wallet</span>
-          <h1 className="font-display-sm text-display-sm tracking-tight">LedgerLeaf</h1>
+      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-xs">
+                <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
+              </div>
+              <div>
+                <h1 className="font-bold text-lg text-slate-900 tracking-tight leading-none">LedgerLeaf</h1>
+                <span className="text-[10px] text-emerald-600 font-semibold tracking-wider uppercase">Local-First</span>
+              </div>
+            </div>
+
+            {/* Desktop Navigation */}
+            {!isMobile && (
+              <nav className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      activeTab === tab.id
+                        ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-base" style={activeTab === tab.id ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                      {tab.icon}
+                    </span>
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </nav>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleExpenseCreate}
+              aria-label="Add Expense"
+              title="Add Expense"
+              className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center shadow-xs transition-all active:scale-95"
+            >
+              <span className="material-symbols-outlined text-xl">add</span>
+            </button>
+          </div>
         </div>
-        <button 
-          onClick={handleExpenseCreate}
-          className="text-primary hover:bg-surface-container-high transition-colors p-2 rounded"
-        >
-          <span className="material-symbols-outlined">add</span>
-        </button>
       </header>
 
       {/* Main Content */}
-      <main className="mt-touch-target mb-16 px-container-padding pt-6 space-y-6 pb-12 max-w-4xl mx-auto">
+      <main className="pt-20 pb-24 md:pb-12 px-4 sm:px-6 max-w-5xl mx-auto space-y-6">
         {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'expenses' && (
           <ExpenseTable
@@ -125,25 +171,27 @@ function App() {
         {activeTab === 'settings' && <Settings />}
       </main>
 
-      {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 w-full h-16 flex justify-around items-center bg-surface border-t border-outline-variant pb-safe z-50">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex flex-col items-center justify-center px-4 py-1 transition-transform active:scale-95 duration-150 ${
-              activeTab === tab.id
-                ? 'text-primary font-semibold'
-                : 'text-on-surface-variant hover:bg-surface-container-low'
-            }`}
-          >
-            <span className="material-symbols-outlined" style={activeTab === tab.id ? { fontVariationSettings: "'FILL' 1" } : {}}>
-              {tab.icon}
-            </span>
-            <span className="font-label-caps text-label-caps">{tab.label}</span>
-          </button>
-        ))}
-      </nav>
+      {/* BottomNavBar on Mobile */}
+      {isMobile && (
+        <nav className="fixed bottom-0 left-0 w-full h-16 flex justify-around items-center bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg pb-safe z-50">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex flex-col items-center justify-center px-3 py-1 transition-transform active:scale-95 ${
+                activeTab === tab.id
+                  ? 'text-emerald-700 font-semibold'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <span className="material-symbols-outlined text-xl" style={activeTab === tab.id ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                {tab.icon}
+              </span>
+              <span className="text-[11px] font-medium">{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
 
       {/* Expense Editor Modal */}
       {showEditor && (
